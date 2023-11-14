@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name            YouTube video downloader
-// @icon            https://www.youtube.com/s/desktop/6ee70b2c/img/favicon_144x144.png
+// @icon            https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/images/icon.png
 // @namespace       aGkgdGhlcmUgOik=
 // @source          https://github.com/madkarmaa/youtube-downloader
 // @supportURL      https://github.com/madkarmaa/youtube-downloader
 // @updateURL       https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
 // @downloadURL     https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
-// @version         1.1.0
+// @version         1.1.1
 // @description     Download YouTube videos locally with the best quality!
 // @author          mk_
 // @match           *://*youtube.com/watch*

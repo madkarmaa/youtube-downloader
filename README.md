@@ -1,5 +1,5 @@
 <h1 align="center">
-    <img src="https://www.youtube.com/s/desktop/6ee70b2c/img/favicon_144x144.png" alt="icon" style="width: 65px; height: 65px"><br>
+    <img src="https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/images/icon.png" alt="icon" style="width: 65px; height: 65px"><br>
     YouTube downloader
 </h1>
 
