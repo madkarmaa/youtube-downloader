@@ -6,7 +6,7 @@
 // @supportURL      https://github.com/madkarmaa/youtube-downloader
 // @updateURL       https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
 // @downloadURL     https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
-// @version         1.0.0
+// @version         1.0.1
 // @description     Download YouTube videos locally at the best quality!
 // @author          mk_
 // @match           *://*youtube.com/watch*
@@ -20,7 +20,7 @@
 (async () => {
     'use strict';
 
-    async function Cobalt(video_url) {
+    function Cobalt(video_url) {
         // Use Promise because GM.xmlHttpRequest is async and behaves differently with different userscript managers
         return new Promise((resolve, reject) => {
             GM.xmlHttpRequest({
