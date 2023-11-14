@@ -7,7 +7,7 @@
 // @updateURL       https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
 // @downloadURL     https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
 // @version         1.0.1
-// @description     Download YouTube videos locally at the best quality!
+// @description     Download YouTube videos locally with the best quality!
 // @author          mk_
 // @match           *://*youtube.com/watch*
 // @connect         co.wuk.sh
