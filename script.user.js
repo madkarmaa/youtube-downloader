@@ -6,15 +6,16 @@
 // @supportURL      https://github.com/madkarmaa/youtube-downloader
 // @updateURL       https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
 // @downloadURL     https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
-// @version         1.1.1
+// @version         1.1.2
 // @description     Download YouTube videos locally with the best quality!
 // @author          mk_
-// @match           *://*youtube.com/watch*
+// @match           *://*.youtube.com/*
 // @connect         co.wuk.sh
 // @connect         raw.githubusercontent.com
 // @grant           GM_addStyle
 // @grant           GM.xmlHttpRequest
 // @grant           GM.xmlhttpRequest
+// @run-at          document-end
 // ==/UserScript==
 
 (async () => {
