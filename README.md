@@ -21,3 +21,7 @@ Install any userscript manager extension in your browser, such as **Tampermonkey
     <img src="https://raw.githubusercontent.com/wukko/cobalt/current/src/front/icons/android-chrome-512x512.png" alt="cobalt-icon" width=22>
     This userscript uses the <a href="https://github.com/wukko/cobalt">Cobalt</a> API to download the videos, so definitely go check them out
 </b>
+<br>
+<br>
+
+[As stated by the Cobalt's creator(s)](https://github.com/wukko/cobalt/tree/current#ethics-and-disclaimer), this is **_NOT_** a piracy tool and cannot be used as such. It can only download free, publicly accessible content. Such content can be easily downloaded through any browser's dev tools. Pressing one button is easier, so I made a convenient, ad-less tool for such repeated actions.
