@@ -1,0 +1,12 @@
+<h1 align="center">
+    <img src="https://www.youtube.com/s/desktop/6ee70b2c/img/favicon_144x144.png" alt="icon" style="width: 65px; height: 65px"><br>
+    YouTube downloader
+</h1>
+
+<p align="center">
+    <i>A simple userscript to download YouTube videos in <b>MAX QUALITY</b></i>
+</p>
+
+## ⚙️ Installation
+
+Install any userscript manager extension in your browser, such as **Tampermonkey**, **Greasemonkey** or **Violentmonkey**, then click [**here**](https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js)
