@@ -10,3 +10,7 @@
 ## ⚙️ Installation
 
 Install any userscript manager extension in your browser, such as **Tampermonkey**, **Greasemonkey** or **Violentmonkey**, then click [**here**](https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js)
+
+## ❓ Info
+
+This userscript uses the [**Cobalt**](https://github.com/wukko/cobalt) API to download the videos, so definitely go check them out.
