@@ -13,4 +13,4 @@ Install any userscript manager extension in your browser, such as **Tampermonkey
 
 ## ❓ Info
 
-This userscript uses the [**Cobalt**](https://github.com/wukko/cobalt) API to download the videos, so definitely go check them out.
+This userscript uses the **[Cobalt](https://github.com/wukko/cobalt) API** to download the videos, so definitely go check them out.
