@@ -9,7 +9,9 @@
 
 ## ⚙️ Installation
 
-Install any userscript manager extension in your browser, such as **Tampermonkey**, **Greasemonkey** or **Violentmonkey**, then click [**here**](https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js)
+Install any userscript manager extension in your browser, such as **Tampermonkey**, **Greasemonkey** or **Violentmonkey**, then click the button below for a clean installation of the script.
+
+![badge](https://img.shields.io/badge/INSTALL-ff0000?style=for-the-badge&logo=youtube&logoColor=ffffff&link=https%3A%2F%2Fraw.githubusercontent.com%2Fmadkarmaa%2Fyoutube-downloader%2Fmain%2Fscript.user.js)
 
 ## ❓ Info
 
