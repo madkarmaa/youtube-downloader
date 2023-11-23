@@ -15,11 +15,13 @@ Install any userscript manager extension in your browser, such as **Tampermonkey
 
 ## ❓ Info
 
-![screenshot](https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/images/screenshot.png)
+![screenshot-yt](https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/images/screenshot-yt.png)
 
-**Click** the download button to download as video (`.mp4` format), or **right click** to download as audio (`.mp3` format).
+![screenshot-ytm](https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/images/screenshot-ytm.png)
 
 _Support for **YouTube** and **YouTube music**!_
+
+**Click** the download button to download as video (`.mp4` format), or **right click** to download as audio (`.mp3` format).
 
 <b>
     <img src="https://raw.githubusercontent.com/wukko/cobalt/current/src/front/icons/android-chrome-512x512.png" alt="cobalt-icon" width=22>

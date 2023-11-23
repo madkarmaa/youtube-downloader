@@ -21,6 +21,8 @@
 (async () => {
     'use strict';
 
+    const randomNumber = Math.floor(Math.random() * Date.now());
+
     function Cobalt(videoUrl, audioOnly = false) {
         // Use Promise because GM.xmlHttpRequest is async and behaves differently with different userscript managers
         return new Promise((resolve, reject) => {
@@ -66,6 +68,27 @@
         });
     }
 
+    function notify(title, message) {
+        const notificationContainer = document.createElement('div');
+        notificationContainer.id = `yt-downloader-notification-${randomNumber}`;
+
+        const titleElement = document.createElement('h3');
+        titleElement.textContent = title;
+
+        const messageElement = document.createElement('span');
+        messageElement.textContent = message;
+
+        const closeButton = document.createElement('button');
+        closeButton.innerHTML =
+            '<svg xmlns="http://www.w3.org/2000/svg" height="1.5rem" viewBox="0 0 384 512"><path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/></svg>';
+        closeButton.addEventListener('click', () => {
+            notificationContainer.remove();
+        });
+
+        notificationContainer.append(titleElement, messageElement, closeButton);
+        document.body.appendChild(notificationContainer);
+    }
+
     // true if youtube, false if youtube music
     const YOUTUBE_SERVICE = window.location.hostname.split('.')[0] !== 'music';
 
@@ -78,7 +101,7 @@
 
     const downloadButton = document.createElement('button');
 
-    const buttonId = `yt-downloader-btn-${Math.floor(Math.random() * Date.now())}`;
+    const buttonId = `yt-downloader-btn-${randomNumber}`;
     downloadButton.id = buttonId;
     downloadButton.title = 'Click to download as video\nRight click to download as audio';
     downloadButton.innerHTML =
@@ -90,23 +113,25 @@
 
     // normal click => download video
     downloadButton.addEventListener('click', async () => {
-        if (!window.location.pathname.slice(1)) return; // do nothing if video is not focused
+        if (!window.location.pathname.slice(1))
+            return notify('Hey!', 'The video/song player is not open, I cannot see the link to download!'); // do nothing if video is not focused
 
         try {
             window.open(await Cobalt(window.location.href), '_blank');
         } catch (err) {
-            window.alert(err);
+            notify('An error occurred!', JSON.stringify(err));
         }
     });
     // right click => download audio
     downloadButton.addEventListener('contextmenu', async (e) => {
-        if (!window.location.pathname.slice(1)) return; // do nothing if video is not focused
+        if (!window.location.pathname.slice(1))
+            return notify('Hey!', 'The video/song player is not open, I cannot see the link to download!'); // do nothing if video is not focused
 
         e.preventDefault();
         try {
             window.open(await Cobalt(window.location.href, true), '_blank');
         } catch (err) {
-            window.alert(err);
+            notify('An error occurred!', JSON.stringify(err));
         }
         return false;
     });
@@ -119,6 +144,47 @@
 
 #${buttonId}:hover > svg {
     fill: #f00;
+}
+
+#yt-downloader-notification-${randomNumber} {
+    background-color: #282828;
+    color: #fff;
+    border: 2px solid #fff;
+    border-radius: 8px;
+    position: fixed;
+    top: 0;
+    right: 0;
+    margin-top: 10px;
+    margin-right: 10px;
+    padding: 15px;
+    z-index: 999;
+}
+
+#yt-downloader-notification-${randomNumber} > h3 {
+    color: #f00;
+    font-size: 2.5rem;
+}
+
+#yt-downloader-notification-${randomNumber} > span {
+    font-style: italic;
+    font-size: 1.5rem;
+}
+
+#yt-downloader-notification-${randomNumber} > button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: none;
+    border: none;
+    outline: none;
+    width: fit-content;
+    height: fit-content;
+    margin: 5px;
+    padding: 0;
+}
+
+#yt-downloader-notification-${randomNumber} > button > svg {
+    fill: #fff;
 }
 `);
 
