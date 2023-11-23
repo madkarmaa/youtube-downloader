@@ -6,8 +6,8 @@
 // @supportURL      https://github.com/madkarmaa/youtube-downloader
 // @updateURL       https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
 // @downloadURL     https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
-// @version         1.1.2
-// @description     Download YouTube videos locally with the best quality!
+// @version         1.2.0
+// @description     A simple userscript to download YouTube videos in MAX QUALITY
 // @author          mk_
 // @match           *://*.youtube.com/*
 // @connect         co.wuk.sh
@@ -68,21 +68,19 @@
 
     // wait for the share button to appear before continuing
     const shareButton = await waitForElement(
-        'div#top-row > div#actions > div#actions-inner > div#menu button[aria-label="Share"]'
+        'div#player div.ytp-chrome-controls div.ytp-right-controls button[aria-label="Settings"]'
     );
 
     const downloadButton = document.createElement('button');
-    downloadButton.textContent = 'Download';
 
-    const buttonId = `button-${Math.floor(Math.random() * Date.now())}`;
+    const buttonId = `yt-downloader-btn-${Math.floor(Math.random() * Date.now())}`;
     downloadButton.id = buttonId;
     downloadButton.title = 'Click to download as video\nRight click to download as audio';
-
-    const buttonIcon = document.createElement('div');
-    buttonIcon.innerHTML =
+    downloadButton.innerHTML =
         '<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" height="24" viewBox="0 0 24 24" width="24" focusable="false" style="pointer-events: none; display: block; width: 100%; height: 100%;"><path d="M17 18v1H6v-1h11zm-.5-6.6-.7-.7-3.8 3.7V4h-1v10.4l-3.8-3.8-.7.7 5 5 5-4.9z"></path></svg>';
+    downloadButton.classList = shareButton.classList;
+    downloadButton.classList.add('ytp-hd-quality-badge');
 
-    downloadButton.insertBefore(buttonIcon, downloadButton.firstChild);
     // normal click => download video
     downloadButton.addEventListener('click', async () => {
         try {
@@ -101,28 +99,18 @@
         }
         return false;
     });
-    downloadButton.classList = shareButton.classList;
 
     GM_addStyle(`
-#${buttonId} {
-    margin-right: 8px !important;
-    background-color: rgba(255, 0, 0, 0.3);
-    transition: all 0.3s ease-in-out;
+#${buttonId} > svg {
+    margin-top: 3px;
+    margin-bottom: -3px;
 }
 
-#${buttonId}:hover {
-    background-color: rgba(255, 0, 0, 0.5);
-    box-shadow: 0px 0px 4px 6px rgba(255, 0, 0, 0.3);
-}
-
-#${buttonId} > div {
-    margin-right: 6px !important;
-    margin-left: -6px !important;
+#${buttonId}:hover > svg {
+    fill: #f00;
 }
 `);
 
-    const buttonsRow = document.querySelector(
-        'div#top-row > div#actions > div#actions-inner > div#menu div#top-level-buttons-computed'
-    );
+    const buttonsRow = await waitForElement('div#player div.ytp-chrome-controls div.ytp-right-controls');
     if (!buttonsRow.contains(downloadButton)) buttonsRow.insertBefore(downloadButton, buttonsRow.firstChild);
 })();
