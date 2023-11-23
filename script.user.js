@@ -6,7 +6,7 @@
 // @supportURL      https://github.com/madkarmaa/youtube-downloader
 // @updateURL       https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
 // @downloadURL     https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
-// @version         1.2.0
+// @version         1.3.0
 // @description     A simple userscript to download YouTube videos in MAX QUALITY
 // @author          mk_
 // @match           *://*.youtube.com/*
@@ -66,9 +66,14 @@
         });
     }
 
-    // wait for the share button to appear before continuing
-    const shareButton = await waitForElement(
-        'div#player div.ytp-chrome-controls div.ytp-right-controls button[aria-label="Settings"]'
+    // true if youtube, false if youtube music
+    const YOUTUBE_SERVICE = window.location.hostname.split('.')[0] !== 'music';
+
+    // wait for the button to copy to appear before continuing
+    const buttonToCopy = await waitForElement(
+        YOUTUBE_SERVICE
+            ? 'div#player div.ytp-chrome-controls div.ytp-right-controls button[aria-label="Settings"]'
+            : '[slot="player-bar"] div.middle-controls div.middle-controls-buttons #like-button-renderer #button-shape-dislike button[aria-label="Dislike"]'
     );
 
     const downloadButton = document.createElement('button');
@@ -78,11 +83,15 @@
     downloadButton.title = 'Click to download as video\nRight click to download as audio';
     downloadButton.innerHTML =
         '<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" height="24" viewBox="0 0 24 24" width="24" focusable="false" style="pointer-events: none; display: block; width: 100%; height: 100%;"><path d="M17 18v1H6v-1h11zm-.5-6.6-.7-.7-3.8 3.7V4h-1v10.4l-3.8-3.8-.7.7 5 5 5-4.9z"></path></svg>';
-    downloadButton.classList = shareButton.classList;
-    downloadButton.classList.add('ytp-hd-quality-badge');
+    downloadButton.classList = buttonToCopy.classList;
+
+    if (YOUTUBE_SERVICE) downloadButton.classList.add('ytp-hd-quality-badge');
+    downloadButton.classList.add(YOUTUBE_SERVICE ? 'YT' : 'YTM');
 
     // normal click => download video
     downloadButton.addEventListener('click', async () => {
+        if (!window.location.pathname.slice(1)) return; // do nothing if video is not focused
+
         try {
             window.open(await Cobalt(window.location.href), '_blank');
         } catch (err) {
@@ -91,6 +100,8 @@
     });
     // right click => download audio
     downloadButton.addEventListener('contextmenu', async (e) => {
+        if (!window.location.pathname.slice(1)) return; // do nothing if video is not focused
+
         e.preventDefault();
         try {
             window.open(await Cobalt(window.location.href, true), '_blank');
@@ -101,7 +112,7 @@
     });
 
     GM_addStyle(`
-#${buttonId} > svg {
+#${buttonId}.YT > svg {
     margin-top: 3px;
     margin-bottom: -3px;
 }
@@ -111,6 +122,10 @@
 }
 `);
 
-    const buttonsRow = await waitForElement('div#player div.ytp-chrome-controls div.ytp-right-controls');
+    const buttonsRow = await waitForElement(
+        YOUTUBE_SERVICE
+            ? 'div#player div.ytp-chrome-controls div.ytp-right-controls'
+            : '[slot="player-bar"] div.middle-controls div.middle-controls-buttons'
+    );
     if (!buttonsRow.contains(downloadButton)) buttonsRow.insertBefore(downloadButton, buttonsRow.firstChild);
 })();
