@@ -6,7 +6,7 @@
 // @supportURL      https://github.com/madkarmaa/youtube-downloader
 // @updateURL       https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
 // @downloadURL     https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
-// @version         1.3.6
+// @version         1.4.0
 // @description     A simple userscript to download YouTube videos in MAX QUALITY
 // @author          mk_
 // @match           *://*.youtube.com/*
@@ -89,14 +89,26 @@
         document.body.appendChild(notificationContainer);
     }
 
-    // true if youtube, false if youtube music
-    const YOUTUBE_SERVICE = window.location.hostname.split('.')[0] !== 'music';
+    // detect which youtube service is being used
+    const SERVICES = {
+        YOUTUBE: 'www.youtube.com',
+        SHORTS: '/shorts',
+        MUSIC: 'music.youtube.com',
+    };
+    const YOUTUBE_SERVICE =
+        window.location.hostname === SERVICES.YOUTUBE && window.location.pathname.startsWith(SERVICES.SHORTS)
+            ? 'SHORTS'
+            : window.location.hostname === SERVICES.MUSIC
+            ? 'MUSIC'
+            : 'YOUTUBE';
 
     // wait for the button to copy to appear before continuing
     const buttonToCopy = await waitForElement(
-        YOUTUBE_SERVICE
+        YOUTUBE_SERVICE === 'YOUTUBE'
             ? 'div#player div.ytp-chrome-controls div.ytp-right-controls button[aria-label="Settings"]'
-            : '[slot="player-bar"] div.middle-controls div.middle-controls-buttons #like-button-renderer #button-shape-dislike button[aria-label="Dislike"]'
+            : YOUTUBE_SERVICE === 'MUSIC'
+            ? '[slot="player-bar"] div.middle-controls div.middle-controls-buttons #like-button-renderer #button-shape-dislike button[aria-label="Dislike"]'
+            : 'div#actions.ytd-reel-player-overlay-renderer div#comments-button button'
     );
 
     const downloadButton = document.createElement('button');
@@ -108,11 +120,11 @@
         '<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" height="24" viewBox="0 0 24 24" width="24" focusable="false" style="pointer-events: none; display: block; width: 100%; height: 100%;"><path d="M17 18v1H6v-1h11zm-.5-6.6-.7-.7-3.8 3.7V4h-1v10.4l-3.8-3.8-.7.7 5 5 5-4.9z"></path></svg>';
     downloadButton.classList = buttonToCopy.classList;
 
-    if (YOUTUBE_SERVICE) downloadButton.classList.add('ytp-hd-quality-badge');
-    downloadButton.classList.add(YOUTUBE_SERVICE ? 'YT' : 'YTM');
+    if (YOUTUBE_SERVICE === 'YOUTUBE') downloadButton.classList.add('ytp-hd-quality-badge');
+    downloadButton.classList.add(YOUTUBE_SERVICE);
 
     // normal click => download video
-    downloadButton.addEventListener('click', async () => {
+    async function leftClick() {
         if (!window.location.pathname.slice(1))
             return notify('Hey!', 'The video/song player is not open, I cannot see the link to download!'); // do nothing if video is not focused
 
@@ -121,9 +133,10 @@
         } catch (err) {
             notify('An error occurred!', JSON.stringify(err));
         }
-    });
+    }
+    downloadButton.addEventListener('click', leftClick);
     // right click => download audio
-    downloadButton.addEventListener('contextmenu', async (e) => {
+    async function rightClick() {
         if (!window.location.pathname.slice(1))
             return notify('Hey!', 'The video/song player is not open, I cannot see the link to download!'); // do nothing if video is not focused
 
@@ -134,12 +147,17 @@
             notify('An error occurred!', JSON.stringify(err));
         }
         return false;
-    });
+    }
+    downloadButton.addEventListener('contextmenu', rightClick);
 
     GM_addStyle(`
-#${buttonId}.YT > svg {
+#${buttonId}.YOUTUBE > svg {
     margin-top: 3px;
     margin-bottom: -3px;
+}
+
+#${buttonId}.SHORTS > svg {
+    margin-left: 3px;
 }
 
 #${buttonId}:hover > svg {
@@ -188,10 +206,28 @@
 }
 `);
 
-    const buttonsRow = await waitForElement(
-        YOUTUBE_SERVICE
-            ? 'div#player div.ytp-chrome-controls div.ytp-right-controls'
-            : '[slot="player-bar"] div.middle-controls div.middle-controls-buttons'
-    );
-    if (!buttonsRow.contains(downloadButton)) buttonsRow.insertBefore(downloadButton, buttonsRow.firstChild);
+    if (YOUTUBE_SERVICE !== 'SHORTS') {
+        const buttonsRow = await waitForElement(
+            YOUTUBE_SERVICE === 'YOUTUBE'
+                ? 'div#player div.ytp-chrome-controls div.ytp-right-controls'
+                : '[slot="player-bar"] div.middle-controls div.middle-controls-buttons'
+        );
+        if (!buttonsRow.contains(downloadButton)) buttonsRow.insertBefore(downloadButton, buttonsRow.firstChild);
+    } else {
+        function addButtonToShorts() {
+            document.querySelectorAll('div#actions.ytd-reel-player-overlay-renderer').forEach((buttonsRow) => {
+                const dlButtonCopy = downloadButton.cloneNode(true);
+                dlButtonCopy.addEventListener('click', leftClick);
+                dlButtonCopy.addEventListener('contextmenu', rightClick);
+
+                if (!buttonsRow.getAttribute('data-button-added') && !buttonsRow.contains(downloadButton)) {
+                    buttonsRow.insertBefore(dlButtonCopy, buttonsRow.querySelector('div#like-button'));
+                    buttonsRow.setAttribute('data-button-added', true);
+                }
+            });
+        }
+
+        addButtonToShorts();
+        document.addEventListener('yt-navigate-finish', addButtonToShorts);
+    }
 })();
