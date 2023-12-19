@@ -6,7 +6,7 @@
 // @supportURL      https://github.com/madkarmaa/youtube-downloader
 // @updateURL       https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
 // @downloadURL     https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
-// @version         1.4.0
+// @version         1.4.1
 // @description     A simple userscript to download YouTube videos in MAX QUALITY
 // @author          mk_
 // @match           *://*.youtube.com/*
@@ -134,20 +134,24 @@
             notify('An error occurred!', JSON.stringify(err));
         }
     }
-    downloadButton.addEventListener('click', leftClick);
+
     // right click => download audio
-    async function rightClick() {
+    async function rightClick(e) {
+        e.preventDefault();
+
         if (!window.location.pathname.slice(1))
             return notify('Hey!', 'The video/song player is not open, I cannot see the link to download!'); // do nothing if video is not focused
 
-        e.preventDefault();
         try {
             window.open(await Cobalt(window.location.href, true), '_blank');
         } catch (err) {
             notify('An error occurred!', JSON.stringify(err));
         }
+
         return false;
     }
+
+    downloadButton.addEventListener('click', leftClick);
     downloadButton.addEventListener('contextmenu', rightClick);
 
     GM_addStyle(`
@@ -216,11 +220,11 @@
     } else {
         function addButtonToShorts() {
             document.querySelectorAll('div#actions.ytd-reel-player-overlay-renderer').forEach((buttonsRow) => {
-                const dlButtonCopy = downloadButton.cloneNode(true);
-                dlButtonCopy.addEventListener('click', leftClick);
-                dlButtonCopy.addEventListener('contextmenu', rightClick);
+                if (!buttonsRow.getAttribute('data-button-added') && !buttonsRow.querySelector(buttonId)) {
+                    const dlButtonCopy = downloadButton.cloneNode(true);
+                    dlButtonCopy.addEventListener('click', leftClick);
+                    dlButtonCopy.addEventListener('contextmenu', rightClick);
 
-                if (!buttonsRow.getAttribute('data-button-added') && !buttonsRow.contains(downloadButton)) {
                     buttonsRow.insertBefore(dlButtonCopy, buttonsRow.querySelector('div#like-button'));
                     buttonsRow.setAttribute('data-button-added', true);
                 }
