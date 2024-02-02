@@ -6,7 +6,7 @@
 // @supportURL      https://github.com/madkarmaa/youtube-downloader
 // @updateURL       https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
 // @downloadURL     https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
-// @version         2.0.0
+// @version         2.0.1
 // @description     A simple userscript to download YouTube videos in MAX QUALITY
 // @author          mk_
 // @match           *://*.youtube.com/*
@@ -346,7 +346,8 @@ input {
         notify(
             'Wait! Read this first!',
             `Here you can set up the code you want to be executed when LEFT CLICKING the download button.
-            It requires JavaScript coding skills, so proceed only if you know what you are doing.
+            <br><br>It requires JavaScript coding knowledge, so proceed only if you know what you are doing.
+            <br><br> You have access to <b>some</b> <a target="_blank" href="https://violentmonkey.github.io/api/gm/">GM API functions</a>, described in the userscript header.
             <br><br><a target="_blank" href="https://github.com/madkarmaa/youtube-downloader/docs/PLACEHOLDERS.md">Read more</a>`
         );
 
