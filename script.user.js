@@ -61,7 +61,8 @@
     margin-top: 10px;
     margin-right: 10px;
     padding: 15px;
-    z-index: 999;
+    z-index: 99999;
+    max-width: 17.5%;
 }
 
 #yt-downloader-notification-${randomNumber} > h3 {
@@ -335,6 +336,12 @@ input {
         menuPopup.style.display = 'block';
         menuPopup.classList.add('opened');
         menuPopup.classList.remove('closed');
+
+        notify(
+            'Wait! Read this first!',
+            'Here you can set up the code you want to be executed when LEFT CLICKING the download button. It requires JavaScript coding skills, so proceed only if you know what you are doing.'
+        );
+
         return false;
     }
 
