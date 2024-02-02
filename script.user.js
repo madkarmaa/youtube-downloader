@@ -434,7 +434,7 @@ input {
 
     codeTextArea.value =
         localStorage.getItem('yt-dl-code') ||
-        `(async () => { ${Cobalt.toString()}; window.open(await Cobalt(window.location.href), '_blank'); })();`;
+        `(async () => {\n\n${Cobalt.toString()}\n\nwindow.open(await Cobalt(window.location.href), '_blank');\n\n})();`;
     localStorage.setItem('yt-dl-code', codeTextArea.value);
 
     menuPopup.addEventListener('animationend', (e) => {
