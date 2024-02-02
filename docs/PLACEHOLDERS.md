@@ -1,6 +1,6 @@
-## What placeholders are you talking about?
+# What placeholders are you talking about?
 
-When you [MMB click](https://www.minitool.com/images/uploads/news/2019/03/use-mouse-middle-click-button-windows/use-mouse-middle-click-button-windows-thumbnail.jpg) on the download button, you're greeted with a text input where you can write the code to be executed when [LMB click](https://freesvg.org/img/1543784094.png) on said button. Placeholders are used to retrieve a video's data and use it in said code, without having to write all the code to grab them by yourself.
+When you [MMB click](https://www.minitool.com/images/uploads/news/2019/03/use-mouse-middle-click-button-windows/use-mouse-middle-click-button-windows-thumbnail.jpg) on the download button, you're greeted with a text input where you can write the code to be executed when [LMB clicking](https://freesvg.org/img/1543784094.png) on said button. Placeholders are used to retrieve a video's data and use it in said code, without having to type it all down to grab the data by yourself.
 
 ## Example placeholder: `{{ placeholder_name }}`
 
