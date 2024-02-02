@@ -75,6 +75,10 @@
     font-size: 1.5rem;
 }
 
+#yt-downloader-notification-${randomNumber} a {
+    color: #f00;
+}
+
 #yt-downloader-notification-${randomNumber} > button {
     position: absolute;
     top: 0;
@@ -250,7 +254,7 @@ input {
         titleElement.textContent = title;
 
         const messageElement = document.createElement('span');
-        messageElement.textContent = message;
+        messageElement.innerHTML = message;
 
         const closeButton = document.createElement('button');
         closeButton.innerHTML =
@@ -341,7 +345,9 @@ input {
 
         notify(
             'Wait! Read this first!',
-            'Here you can set up the code you want to be executed when LEFT CLICKING the download button. It requires JavaScript coding skills, so proceed only if you know what you are doing.'
+            `Here you can set up the code you want to be executed when LEFT CLICKING the download button.
+            It requires JavaScript coding skills, so proceed only if you know what you are doing.
+            <br><br><a target="_blank" href="https://github.com/madkarmaa/youtube-downloader/docs/PLACEHOLDERS.md">Read more</a>`
         );
 
         return false;
