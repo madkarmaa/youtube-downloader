@@ -129,6 +129,30 @@
     display: none;
 }
 
+#yt-downloader-menu-${randomNumber} > button {
+    opacity: 0.25;
+    position: absolute;
+    top: 0;
+    right: 0;
+    border-top-right-radius: 8px;
+    background-color: rgba(255, 0, 0, 0.5);
+    color: #fff;
+    outline: none;
+    border: none;
+    border-bottom: 2px solid #f00;
+    border-left: 2px solid #f00;
+    cursor: pointer;
+    font-family: "Fira Code", monospace;
+    font-size: 1.2rem;
+    transition: all .3s ease-in-out;
+    margin: 0;
+    padding: 3px 5px;
+}
+
+#yt-downloader-menu-${randomNumber} > button:hover {
+    opacity: 1;
+}
+
 #yt-downloader-menu-${randomNumber}.opened {
     animation: openMenu .3s linear forwards;
 }
@@ -430,7 +454,14 @@ input {
     menuPopup.classList.add('closed');
 
     const codeTextArea = document.createElement('textarea');
-    menuPopup.appendChild(codeTextArea);
+
+    const resetButton = document.createElement('button');
+    resetButton.textContent = 'Reset to default';
+    resetButton.addEventListener('click', () => {
+        codeTextArea.value = `(async () => {\n\n${Cobalt.toString()}\n\nwindow.open(await Cobalt(window.location.href), '_blank');\n\n})();`;
+    });
+
+    menuPopup.append(codeTextArea, resetButton);
 
     codeTextArea.value =
         localStorage.getItem('yt-dl-code') ||
