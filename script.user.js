@@ -453,6 +453,19 @@ input {
         }
     }
 
+    let VIDEO_DATA = {};
+    document.addEventListener('yt-player-updated', (e) => {
+        const temp_video_data = e.detail.getVideoData();
+        VIDEO_DATA = {
+            current_time: e.detail.getCurrentTime(),
+            video_duration: e.detail.getDuration(),
+            video_url: e.detail.getVideoUrl(),
+            video_author: temp_video_data?.author,
+            video_title: temp_video_data?.title,
+            video_id: temp_video_data?.video_id,
+        };
+    });
+
     let YOUTUBE_SERVICE = updateService();
 
     const menuPopup = document.createElement('div');
