@@ -6,7 +6,7 @@
 // @supportURL      https://github.com/madkarmaa/youtube-downloader
 // @updateURL       https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
 // @downloadURL     https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
-// @version         2.0.1
+// @version         2.0.2
 // @description     A simple userscript to download YouTube videos in MAX QUALITY
 // @author          mk_
 // @match           *://*.youtube.com/*
@@ -399,7 +399,8 @@ input {
         // create the download button
         const downloadButton = document.createElement('button');
         downloadButton.id = buttonId;
-        downloadButton.title = 'Click to download as video\nRight click to download as audio';
+        downloadButton.title =
+            'Click to download as video\nRight click to download as audio\nMMB to open advanced settings menu';
         downloadButton.innerHTML =
             '<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" height="24" viewBox="0 0 24 24" width="24" focusable="false" style="pointer-events: none; display: block; width: 100%; height: 100%;"><path d="M17 18v1H6v-1h11zm-.5-6.6-.7-.7-3.8 3.7V4h-1v10.4l-3.8-3.8-.7.7 5 5 5-4.9z"></path></svg>';
         downloadButton.classList = buttonToCopy.classList;
