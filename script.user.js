@@ -297,9 +297,11 @@ input {
         if (!window.location.pathname.slice(1))
             return notify('Hey!', 'The video/song player is not open, I cannot see the link to download!'); // do nothing if video is not focused
 
+        if (!VIDEO_DATA) return notify("The video data hasn't been loaded yet", 'Try again in a few seconds...');
+
         try {
             // window.open(await Cobalt(window.location.href), '_blank');
-            eval(codeTextArea.value);
+            eval(replacePlaceholders(codeTextArea.value));
         } catch (err) {
             notify('An error occurred!', JSON.stringify(err));
         }
@@ -453,7 +455,11 @@ input {
         }
     }
 
-    let VIDEO_DATA = {};
+    function replacePlaceholders(inputString) {
+        return inputString.replace(/{{\s*([^}\s]+)\s*}}/g, (match, placeholder) => VIDEO_DATA[placeholder] || match);
+    }
+
+    let VIDEO_DATA;
     document.addEventListener('yt-player-updated', (e) => {
         const temp_video_data = e.detail.getVideoData();
         VIDEO_DATA = {
@@ -478,14 +484,14 @@ input {
     const resetButton = document.createElement('button');
     resetButton.textContent = 'Reset to default';
     resetButton.addEventListener('click', () => {
-        codeTextArea.value = `(async () => {\n\n${Cobalt.toString()}\n\nwindow.open(await Cobalt(window.location.href), '_blank');\n\n})();`;
+        codeTextArea.value = `(async () => {\n\n${Cobalt.toString()}\n\nwindow.open(await Cobalt('{{ video_url }}'), '_blank');\n\n})();`;
     });
 
     menuPopup.append(codeTextArea, resetButton);
 
     codeTextArea.value =
         localStorage.getItem('yt-dl-code') ||
-        `(async () => {\n\n${Cobalt.toString()}\n\nwindow.open(await Cobalt(window.location.href), '_blank');\n\n})();`;
+        `(async () => {\n\n${Cobalt.toString()}\n\nwindow.open(await Cobalt('{{ video_url }}'), '_blank');\n\n})();`;
     localStorage.setItem('yt-dl-code', codeTextArea.value);
 
     menuPopup.addEventListener('animationend', (e) => {
