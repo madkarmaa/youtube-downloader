@@ -12,6 +12,7 @@
 // @match           *://*.youtube.com/*
 // @connect         co.wuk.sh
 // @connect         raw.githubusercontent.com
+// @grant           GM_info
 // @grant           GM_addStyle
 // @grant           GM_getValue
 // @grant           GM_setValue
@@ -537,6 +538,13 @@ input {
     });
     document.body.appendChild(menuPopup);
     logger('Menu created', menuPopup);
+
+    logger('Detecting updates');
+    if (GM_info.script.version !== localStorage.getItem('yt-dl-version')) {
+        resetButton.click();
+        localStorage.setItem('yt-dl-version', GM_info.script.version);
+        logger('Version updated in localStorage');
+    } else logger('Version up to date in localStorage');
 
     ['yt-navigate', 'yt-navigate-finish'].forEach((evName) =>
         document.addEventListener(evName, (e) => {
