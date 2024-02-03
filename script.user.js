@@ -478,7 +478,7 @@ input {
             video_title: temp_video_data?.title,
             video_id: temp_video_data?.video_id,
         };
-	logger('Video data updated', VIDEO_DATA);
+        logger('Video data updated', VIDEO_DATA);
     });
 
     let YOUTUBE_SERVICE = updateService();
@@ -494,7 +494,7 @@ input {
     resetButton.textContent = 'Reset to default';
     resetButton.addEventListener('click', () => {
         codeTextArea.value = `(async () => {\n\n${Cobalt.toString()}\n\nwindow.open(await Cobalt('{{ video_url }}'), '_blank');\n\n})();`;
-	logger('Code reset');
+        logger('Code reset');
     });
 
     menuPopup.append(codeTextArea, resetButton);
@@ -514,9 +514,9 @@ input {
             e.preventDefault();
             menuPopup.classList.add('closed');
             menuPopup.classList.remove('opened');
-	    logger('Menu closed');
+            logger('Menu closed');
             localStorage.setItem('yt-dl-code', codeTextArea.value);
-	    logger('Code saved to localStorage');
+            logger('Code saved to localStorage');
             return false;
         }
     });
