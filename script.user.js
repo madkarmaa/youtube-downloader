@@ -191,6 +191,12 @@ input {
 }
 `);
 
+    /**
+     * Download a video using the Cobalt API
+     * @param {String} videoUrl The url of the video to download
+     * @param {*} audioOnly Wether to download the video as audio only or not
+     * @returns
+     */
     function Cobalt(videoUrl, audioOnly = false) {
         // Use Promise because GM.xmlHttpRequest is async and behaves differently with different userscript managers
         return new Promise((resolve, reject) => {
@@ -463,6 +469,11 @@ input {
         }
     }
 
+    /**
+     * Replace the placeholders in a string with their values
+     * @param {*} inputString The input string
+     * @returns {String} The string with the parsed placeholders
+     */
     function replacePlaceholders(inputString) {
         return inputString.replace(/{{\s*([^}\s]+)\s*}}/g, (match, placeholder) => VIDEO_DATA[placeholder] || match);
     }
