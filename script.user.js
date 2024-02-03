@@ -200,6 +200,9 @@ input {
     function Cobalt(videoUrl, audioOnly = false) {
         // Use Promise because GM.xmlHttpRequest is async and behaves differently with different userscript managers
         return new Promise((resolve, reject) => {
+            if (YOUTUBE_SERVICE === 'MUSIC') videoUrl = videoUrl.split('&')[0].replace('music.youtube', 'www.youtube');
+            logger('Parsed video url is:', videoUrl);
+
             // https://github.com/wukko/cobalt/blob/current/docs/api.md
             GM_xmlhttpRequest({
                 method: 'POST',
@@ -307,7 +310,8 @@ input {
         if (!window.location.pathname.slice(1))
             return notify('Hey!', 'The video/song player is not open, I cannot see the link to download!'); // do nothing if video is not focused
 
-        if (!VIDEO_DATA) return notify("The video data hasn't been loaded yet", 'Try again in a few seconds...');
+        if (YOUTUBE_SERVICE !== 'MUSIC' && !VIDEO_DATA)
+            return notify("The video data hasn't been loaded yet", 'Try again in a few seconds...');
 
         try {
             // window.open(await Cobalt(window.location.href), '_blank');
@@ -504,7 +508,7 @@ input {
     const resetButton = document.createElement('button');
     resetButton.textContent = 'Reset to default';
     resetButton.addEventListener('click', () => {
-        codeTextArea.value = `(async () => {\n\n${Cobalt.toString()}\n\nwindow.open(await Cobalt('{{ video_url }}'), '_blank');\n\n})();`;
+        codeTextArea.value = `(async () => {\n\n${Cobalt.toString()}\n\nwindow.open(await Cobalt(window.location.href), '_blank');\n\n})();`;
         logger('Code reset');
     });
 
@@ -512,7 +516,7 @@ input {
 
     codeTextArea.value =
         localStorage.getItem('yt-dl-code') ||
-        `(async () => {\n\n${Cobalt.toString()}\n\nwindow.open(await Cobalt('{{ video_url }}'), '_blank');\n\n})();`;
+        `(async () => {\n\n${Cobalt.toString()}\n\nwindow.open(await Cobalt(window.location.href), '_blank');\n\n})();`;
     localStorage.setItem('yt-dl-code', codeTextArea.value);
     logger('Code retrieved and set to textarea');
 
