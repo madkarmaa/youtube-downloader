@@ -6,7 +6,7 @@
 // @supportURL      https://github.com/madkarmaa/youtube-downloader
 // @updateURL       https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
 // @downloadURL     https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
-// @version         2.0.2
+// @version         2.0.3
 // @description     A simple userscript to download YouTube videos in MAX QUALITY
 // @author          mk_
 // @match           *://*.youtube.com/*
@@ -478,6 +478,7 @@ input {
             video_title: temp_video_data?.title,
             video_id: temp_video_data?.video_id,
         };
+	logger('Video data updated', VIDEO_DATA);
     });
 
     let YOUTUBE_SERVICE = updateService();
@@ -493,6 +494,7 @@ input {
     resetButton.textContent = 'Reset to default';
     resetButton.addEventListener('click', () => {
         codeTextArea.value = `(async () => {\n\n${Cobalt.toString()}\n\nwindow.open(await Cobalt('{{ video_url }}'), '_blank');\n\n})();`;
+	logger('Code reset');
     });
 
     menuPopup.append(codeTextArea, resetButton);
@@ -501,6 +503,7 @@ input {
         localStorage.getItem('yt-dl-code') ||
         `(async () => {\n\n${Cobalt.toString()}\n\nwindow.open(await Cobalt('{{ video_url }}'), '_blank');\n\n})();`;
     localStorage.setItem('yt-dl-code', codeTextArea.value);
+    logger('Code retrieved and set to textarea');
 
     menuPopup.addEventListener('animationend', (e) => {
         if (e.animationName === 'closeMenu') e.target.style.display = 'none';
@@ -511,11 +514,14 @@ input {
             e.preventDefault();
             menuPopup.classList.add('closed');
             menuPopup.classList.remove('opened');
+	    logger('Menu closed');
             localStorage.setItem('yt-dl-code', codeTextArea.value);
+	    logger('Code saved to localStorage');
             return false;
         }
     });
     document.body.appendChild(menuPopup);
+    logger('Menu created', menuPopup);
 
     ['yt-navigate', 'yt-navigate-finish'].forEach((evName) =>
         document.addEventListener(evName, (e) => {
