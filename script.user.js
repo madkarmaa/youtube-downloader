@@ -6,7 +6,7 @@
 // @supportURL      https://github.com/madkarmaa/youtube-downloader
 // @updateURL       https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
 // @downloadURL     https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
-// @version         3.0.0
+// @version         3.0.1
 // @description     A simple userscript to download YouTube videos in MAX QUALITY
 // @author          mk_
 // @match           *://*.youtube.com/*
@@ -20,7 +20,7 @@
 // ==/UserScript==
 
 (async () => {
-    ('use strict');
+    'use strict';
 
     // abort if not on youtube or youtube music
     if (!detectYoutubeService()) {
@@ -52,10 +52,9 @@
 
     // ===== METHODS =====
     function logger(level, ...args) {
-        if (!DEV_MODE) return;
-
-        if (level.toLowerCase() === 'info') oldILog.apply(console, ['%c[YTDL]', 'color: #f00;', ...args]);
-        else if (level.toLowerCase() === 'warn') oldWLog.apply(console, ['%c[YTDL]', 'color: #f00;', ...args]);
+        if (DEV_MODE && level.toLowerCase() === 'info') oldILog.apply(console, ['%c[YTDL]', 'color: #f00;', ...args]);
+        else if (DEV_MODE && level.toLowerCase() === 'warn')
+            oldWLog.apply(console, ['%c[YTDL]', 'color: #f00;', ...args]);
         else if (level.toLowerCase() === 'error') oldELog.apply(console, ['%c[YTDL]', 'color: #f00;', ...args]);
     }
 
@@ -387,6 +386,7 @@
             logger('info', 'Download completed');
         } catch (err) {
             logger('error', JSON.parse(JSON.stringify(err)));
+            new Notification('Error', JSON.stringify(err), 'error', false);
         }
     }
 
@@ -424,6 +424,7 @@
             logger('info', 'Download completed');
         } catch (err) {
             logger('error', JSON.parse(JSON.stringify(err)));
+            new Notification('Error', JSON.stringify(err), 'error', false);
         }
 
         return false;
