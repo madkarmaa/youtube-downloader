@@ -1,0 +1,22 @@
+{
+    "name": "youtube-downloader",
+    "version": "1.0.0",
+    "description": "YouTube downloader",
+    "main": "main.js",
+    "scripts": {
+        "notif": "tsx --no-cache utils/addNotification.ts"
+    },
+    "keywords": [],
+    "author": "madkarma",
+    "license": "MIT",
+    "devDependencies": {
+        "@types/inquirer": "^9.0.7",
+        "tsx": "^4.11.2",
+        "typescript": "^5.4.5"
+    },
+    "dependencies": {
+        "inquirer": "^9.2.23",
+        "uuid-by-string": "^4.0.0"
+    },
+    "type": "module"
+}

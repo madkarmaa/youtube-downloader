@@ -6,7 +6,7 @@
 // @supportURL      https://github.com/madkarmaa/youtube-downloader
 // @updateURL       https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
 // @downloadURL     https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
-// @version         2.0.5
+// @version         3.0.0
 // @description     A simple userscript to download YouTube videos in MAX QUALITY
 // @author          mk_
 // @match           *://*.youtube.com/*
@@ -14,196 +14,54 @@
 // @connect         raw.githubusercontent.com
 // @grant           GM_info
 // @grant           GM_addStyle
-// @grant           GM_getValue
-// @grant           GM_setValue
 // @grant           GM_xmlHttpRequest
 // @grant           GM_xmlhttpRequest
-// @run-at          document-end
+// @run-at          document-start
 // ==/UserScript==
 
 (async () => {
-    'use strict';
+    ('use strict');
 
-    const randomNumber = Math.floor(Math.random() * Date.now());
-    const buttonId = `yt-downloader-btn-${randomNumber}`;
-
-    let oldLog = console.log;
-    /**
-     * Custom logging function copied from `console.log`
-     * @param  {...any} args `console.log` arguments
-     * @returns {void}
-     */
-    const logger = (...args) => oldLog.apply(console, ['\x1b[31m[YT Downloader >> INFO]\x1b[0m', ...args]);
-
-    GM_addStyle(`
-@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap')
-
-#${buttonId}.YOUTUBE > svg {
-    margin-top: 3px;
-    margin-bottom: -3px;
-}
-
-#${buttonId}.SHORTS > svg {
-    margin-left: 3px;
-}
-
-#${buttonId}:hover > svg {
-    fill: #f00;
-}
-
-#yt-downloader-notification-${randomNumber} {
-    background-color: #282828;
-    color: #fff;
-    border: 2px solid #fff;
-    border-radius: 8px;
-    position: fixed;
-    top: 0;
-    right: 0;
-    margin-top: 10px;
-    margin-right: 10px;
-    padding: 15px;
-    z-index: 99999;
-    max-width: 17.5%;
-}
-
-#yt-downloader-notification-${randomNumber} > h3 {
-    color: #f00;
-    font-size: 2.5rem;
-}
-
-#yt-downloader-notification-${randomNumber} > span {
-    font-style: italic;
-    font-size: 1.5rem;
-}
-
-#yt-downloader-notification-${randomNumber} a {
-    color: #f00;
-}
-
-#yt-downloader-notification-${randomNumber} > button {
-    position: absolute;
-    top: 0;
-    right: 0;
-    background: none;
-    border: none;
-    outline: none;
-    width: fit-content;
-    height: fit-content;
-    margin: 5px;
-    padding: 0;
-}
-
-#yt-downloader-notification-${randomNumber} > button > svg {
-    fill: #fff;
-}
-
-#yt-downloader-menu-${randomNumber} {
-    width: 40vw;
-    height: 60vh;
-    background-color: rgba(0, 0, 0, 0.9);
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 999;
-    border-radius: 8px;
-    border: 2px solid rgba(255, 0, 0, 0.9);
-    opacity: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 1.3rem;
-	color: #fff;
-	font-size: 1.5rem !important;
-    padding: 15px;
-}
-
-#yt-downloader-menu-${randomNumber} > textarea {
-    resize: none;
-    width: 100%;
-    background: transparent !important;
-    border: none !important;
-    color: #fff !important;
-    height: 100%;
-    outline: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    font-family: "Fira Code", monospace;
-    font-size: 1.5rem;
-}
-
-#yt-downloader-menu-${randomNumber} > textarea::-webkit-scrollbar {
-    display: none;
-}
-
-#yt-downloader-menu-${randomNumber} > button {
-    opacity: 0.25;
-    position: absolute;
-    top: 0;
-    right: 0;
-    border-top-right-radius: 8px;
-    background-color: rgba(255, 0, 0, 0.5);
-    color: #fff;
-    outline: none;
-    border: none;
-    border-bottom: 2px solid #f00;
-    border-left: 2px solid #f00;
-    cursor: pointer;
-    font-family: "Fira Code", monospace;
-    font-size: 1.2rem;
-    transition: all .3s ease-in-out;
-    margin: 0;
-    padding: 3px 5px;
-}
-
-#yt-downloader-menu-${randomNumber} > button:hover {
-    opacity: 1;
-}
-
-#yt-downloader-menu-${randomNumber}.opened {
-    animation: openMenu .3s linear forwards;
-}
-
-#yt-downloader-menu-${randomNumber}.closed {
-    animation: closeMenu .3s linear forwards;
-}
-
-input {
-	accent-color: #f00;
-}
-
-@keyframes openMenu {
-    0% {
-        opacity: 0;
+    // abort if not on youtube or youtube music
+    if (!detectYoutubeService()) {
+        console.log('\x1b[31m[YTDL]\x1b[0m Invalid YouTube service, aborting...');
+        return;
     }
 
-    100% {
-        opacity: 1;
-    }
-}
+    // ===== VARIABLES =====
+    let DEV_MODE = String(localStorage.getItem('ytdl-dev-mode')).toLowerCase() === 'true';
+    let SHOW_NOTIFICATIONS =
+        localStorage.getItem('ytdl-notif-enabled') === null
+            ? true
+            : String(localStorage.getItem('ytdl-notif-enabled')).toLowerCase() === 'true';
 
-@keyframes closeMenu {
-    0% {
-        opacity: 1;
+    let oldILog = console.log;
+    let oldWLog = console.warn;
+    let oldELog = console.error;
+
+    let VIDEO_DATA = {
+        video_duration: null,
+        video_url: null,
+        video_author: null,
+        video_title: null,
+        video_id: null,
+    };
+
+    let videoDataReady = false;
+    // ===== END VARIABLES =====
+
+    // ===== METHODS =====
+    function logger(level, ...args) {
+        if (!DEV_MODE) return;
+
+        if (level.toLowerCase() === 'info') oldILog.apply(console, ['%c[YTDL]', 'color: #f00;', ...args]);
+        else if (level.toLowerCase() === 'warn') oldWLog.apply(console, ['%c[YTDL]', 'color: #f00;', ...args]);
+        else if (level.toLowerCase() === 'error') oldELog.apply(console, ['%c[YTDL]', 'color: #f00;', ...args]);
     }
 
-    100% {
-        opacity: 0;
-    }
-}
-`);
-
-    /**
-     * Download a video using the Cobalt API
-     * @param {String} videoUrl The url of the video to download
-     * @param {*} audioOnly Wether to download the video as audio only or not
-     * @returns
-     */
     function Cobalt(videoUrl, audioOnly = false) {
-        // Use Promise because GM.xmlHttpRequest is async and behaves differently with different userscript managers
+        // Use Promise because GM.xmlHttpRequest behaves differently with different userscript managers
         return new Promise((resolve, reject) => {
-            if (YOUTUBE_SERVICE === 'MUSIC') videoUrl = videoUrl.split('&')[0].replace('music.youtube', 'www.youtube');
-            logger('Parsed video url is:', videoUrl);
-
             // https://github.com/wukko/cobalt/blob/current/docs/api.md
             GM_xmlhttpRequest({
                 method: 'POST',
@@ -230,11 +88,7 @@ input {
         });
     }
 
-    /**
-     * https://stackoverflow.com/a/61511955
-     * @param {String} selector The CSS selector used to select the element
-     * @returns {Promise<Element>} The selected element
-     */
+    // https://stackoverflow.com/a/61511955
     function waitForElement(selector) {
         return new Promise((resolve) => {
             if (document.querySelector(selector)) return resolve(document.querySelector(selector));
@@ -250,308 +104,680 @@ input {
         });
     }
 
-    /**
-     * Append a notification element to the document
-     * @param {String} title The title of the message
-     * @param {String} message The message to display
-     * @returns {void}
-     */
-    function notify(title, message) {
-        const notificationContainer = document.createElement('div');
-        notificationContainer.id = `yt-downloader-notification-${randomNumber}`;
-
-        const titleElement = document.createElement('h3');
-        titleElement.textContent = title;
-
-        const messageElement = document.createElement('span');
-        messageElement.innerHTML = message;
-
-        const closeButton = document.createElement('button');
-        closeButton.innerHTML =
-            '<svg xmlns="http://www.w3.org/2000/svg" height="1.5rem" viewBox="0 0 384 512"><path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/></svg>';
-        closeButton.addEventListener('click', () => {
-            notificationContainer.remove();
-        });
-
-        notificationContainer.append(titleElement, messageElement, closeButton);
-        document.body.appendChild(notificationContainer);
-    }
-
-    /**
-     * Throw an error after `sec` seconds
-     * @param {number} sec How long to wait before throwing an error (seconds)
-     * @returns {Promise<void>}
-     */
-    function timeout(sec) {
+    function fetchNotifications() {
+        // Use Promise because GM.xmlHttpRequest behaves differently with different userscript managers
         return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                reject('Request timed out after ' + sec + ' seconds');
-            }, sec * 1000);
+            GM_xmlhttpRequest({
+                method: 'GET',
+                url: 'https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/notifications.json',
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                onload: (response) => {
+                    const data = JSON.parse(response.responseText);
+                    if (data?.length) resolve(data);
+                    else reject(data);
+                },
+                onerror: (err) => reject(err),
+            });
         });
     }
 
-    /**
-     * Detect which YouTube service is being used
-     * @returns {"SHORTS" | "MUSIC" | "YOUTUBE" | null}
-     */
-    function updateService() {
+    class Notification {
+        constructor(title, body, uuid, storeUUID = true) {
+            const notification = document.createElement('div');
+            notification.classList.add('ytdl-notification', 'opened', uuid);
+
+            hideOnAnimationEnd(notification, 'closeNotif', true);
+
+            const nTitle = document.createElement('h2');
+            nTitle.textContent = title;
+            notification.appendChild(nTitle);
+
+            const nBody = document.createElement('div');
+            body.split('\n').forEach((text) => {
+                const paragraph = document.createElement('p');
+                paragraph.textContent = text;
+                nBody.appendChild(paragraph);
+            });
+            notification.appendChild(nBody);
+
+            const nDismissButton = document.createElement('button');
+            nDismissButton.textContent = 'Dismiss';
+            nDismissButton.addEventListener('click', () => {
+                if (storeUUID) {
+                    const localNotificationsHashes = JSON.parse(localStorage.getItem('ytdl-notifications') ?? '[]');
+                    localNotificationsHashes.push(uuid);
+                    localStorage.setItem('ytdl-notifications', JSON.stringify(localNotificationsHashes));
+                    logger('info', `Notification ${uuid} set as read`);
+                }
+
+                notification.classList.remove('opened');
+                notification.classList.add('closed');
+            });
+            notification.appendChild(nDismissButton);
+
+            document.body.appendChild(notification);
+            logger('info', 'New notification displayed', notification);
+        }
+    }
+
+    async function manageNotifications() {
+        if (!SHOW_NOTIFICATIONS) {
+            logger('info', 'Notifications disabled by the user');
+            return;
+        }
+
+        const localNotificationsHashes = JSON.parse(localStorage.getItem('ytdl-notifications')) ?? [];
+        logger('info', 'Local read notifications hashes\n\n', localNotificationsHashes);
+
+        const onlineNotifications = await fetchNotifications();
+        logger(
+            'info',
+            'Online notifications hashes\n\n',
+            onlineNotifications.map((n) => n.uuid)
+        );
+
+        const unreadNotifications = onlineNotifications.filter((n) => !localNotificationsHashes.includes(n.uuid));
+        logger(
+            'info',
+            'Unread notifications hashes\n\n',
+            unreadNotifications.map((n) => n.uuid)
+        );
+
+        unreadNotifications.reverse().forEach((n) => {
+            new Notification(n.title, n.body, n.uuid);
+        });
+    }
+
+    async function updateVideoData(e) {
+        videoDataReady = false;
+
+        const temp_video_data = e.detail?.getVideoData();
+        VIDEO_DATA.video_duration = e.detail?.getDuration();
+        VIDEO_DATA.video_url = e.detail?.getVideoUrl();
+        VIDEO_DATA.video_author = temp_video_data?.author;
+        VIDEO_DATA.video_title = temp_video_data?.title;
+        VIDEO_DATA.video_id = temp_video_data?.video_id;
+
+        videoDataReady = true;
+        logger('info', 'Video data updated\n\n', VIDEO_DATA);
+    }
+
+    async function hookPlayerEvent(...fns) {
+        document.addEventListener('yt-player-updated', (e) => {
+            for (let i = 0; i < fns.length; i++) fns[i](e);
+        });
+        logger(
+            'info',
+            'Video player event hooked. Callbacks:\n\n',
+            fns.map((f) => f.name)
+        );
+    }
+
+    async function hookNavigationEvents(...fns) {
+        ['yt-navigate', 'yt-navigate-finish', 'yt-navigate-finish', 'yt-page-data-updated'].forEach((evName) => {
+            document.addEventListener(evName, (e) => {
+                for (let i = 0; i < fns.length; i++) fns[i](e);
+            });
+        });
+        logger(
+            'info',
+            'Navigation events hooked. Callbacks:\n\n',
+            fns.map((f) => f.name)
+        );
+    }
+
+    function hideOnAnimationEnd(target, animationName, alsoRemove = false) {
+        target.addEventListener('animationend', (e) => {
+            if (e.animationName === animationName) {
+                if (alsoRemove) e.target.remove();
+                else e.target.style.display = 'none';
+            }
+        });
+    }
+
+    async function appendSideMenu() {
+        const sideMenu = document.createElement('div');
+        sideMenu.id = 'ytdl-sideMenu';
+        sideMenu.classList.add('closed');
+        sideMenu.style.display = 'none';
+
+        hideOnAnimationEnd(sideMenu, 'closeMenu');
+
+        const sideMenuHeader = document.createElement('h2');
+        sideMenuHeader.textContent = 'Youtube downloader settings';
+        sideMenuHeader.classList.add('header');
+        sideMenu.appendChild(sideMenuHeader);
+
+        // ===== templates, don't use, just clone the node =====
+        const sideMenuSettingContainer = document.createElement('div');
+        sideMenuSettingContainer.classList.add('setting-row');
+        const sideMenuSettingLabel = document.createElement('h3');
+        sideMenuSettingLabel.classList.add('setting-label');
+        const sideMenuSettingDescription = document.createElement('p');
+        sideMenuSettingDescription.classList.add('setting-description');
+        sideMenuSettingContainer.append(sideMenuSettingLabel, sideMenuSettingDescription);
+
+        const switchContainer = document.createElement('span');
+        switchContainer.classList.add('ytdl-switch');
+        const switchCheckbox = document.createElement('input');
+        switchCheckbox.type = 'checkbox';
+        const switchLabel = document.createElement('label');
+        switchContainer.append(switchCheckbox, switchLabel);
+        // ===== end templates =====
+
+        const notifContainer = sideMenuSettingContainer.cloneNode(true);
+        notifContainer.querySelector('.setting-label').textContent = 'Notifications';
+        notifContainer.querySelector('.setting-description').textContent =
+            "Disable if you don't want to receive notifications from the developer.";
+        const notifSwitch = switchContainer.cloneNode(true);
+        notifSwitch.querySelector('input').checked = SHOW_NOTIFICATIONS;
+        notifSwitch.querySelector('input').id = 'ytdl-notif-switch';
+        notifSwitch.querySelector('label').setAttribute('for', 'ytdl-notif-switch');
+        notifSwitch.querySelector('input').addEventListener('change', (e) => {
+            SHOW_NOTIFICATIONS = e.target.checked;
+            localStorage.setItem('ytdl-notif-enabled', SHOW_NOTIFICATIONS);
+            logger('info', `Notifications ${SHOW_NOTIFICATIONS ? 'enabled' : 'disabled'}`);
+        });
+        notifContainer.appendChild(notifSwitch);
+        sideMenu.appendChild(notifContainer);
+
+        const devModeContainer = sideMenuSettingContainer.cloneNode(true);
+        devModeContainer.querySelector('.setting-label').textContent = 'Developer mode';
+        devModeContainer.querySelector('.setting-description').textContent =
+            "Show a detailed output of what's happening under the hood in the console.";
+        const devModeSwitch = switchContainer.cloneNode(true);
+        devModeSwitch.querySelector('input').checked = DEV_MODE;
+        devModeSwitch.querySelector('input').id = 'ytdl-dev-mode-switch';
+        devModeSwitch.querySelector('label').setAttribute('for', 'ytdl-dev-mode-switch');
+        devModeSwitch.querySelector('input').addEventListener('change', (e) => {
+            DEV_MODE = e.target.checked;
+            localStorage.setItem('ytdl-dev-mode', DEV_MODE);
+            // always use console.log here to show output
+            console.log(`\x1b[31m[YTDL]\x1b[0m Developer mode ${DEV_MODE ? 'enabled' : 'disabled'}`);
+        });
+        devModeContainer.appendChild(devModeSwitch);
+        sideMenu.appendChild(devModeContainer);
+
+        document.addEventListener('mousedown', (e) => {
+            if (sideMenu.style.display !== 'none' && !sideMenu.contains(e.target)) {
+                sideMenu.classList.remove('opened');
+                sideMenu.classList.add('closed');
+
+                logger('info', 'Side menu closed');
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key !== 'p') return;
+
+            if (sideMenu.style.display === 'none') {
+                sideMenu.style.top = window.scrollY + 'px';
+                sideMenu.style.display = 'flex';
+                sideMenu.classList.remove('closed');
+                sideMenu.classList.add('opened');
+
+                logger('info', 'Side menu opened');
+            } else {
+                sideMenu.classList.remove('opened');
+                sideMenu.classList.add('closed');
+
+                logger('info', 'Side menu closed');
+            }
+        });
+
+        window.addEventListener('scroll', () => {
+            if (sideMenu.classList.contains('closed')) return;
+
+            sideMenu.classList.remove('opened');
+            sideMenu.classList.add('closed');
+
+            logger('info', 'Side menu closed');
+        });
+
+        document.body.appendChild(sideMenu);
+        logger('info', 'Side menu created\n\n', sideMenu);
+    }
+
+    function detectYoutubeService() {
         if (window.location.hostname === 'www.youtube.com' && window.location.pathname.startsWith('/shorts'))
             return 'SHORTS';
+        if (window.location.hostname === 'www.youtube.com' && window.location.pathname.startsWith('/watch'))
+            return 'WATCH';
         else if (window.location.hostname === 'music.youtube.com') return 'MUSIC';
-        else if (window.location.hostname === 'www.youtube.com' && window.location.pathname.startsWith('/watch'))
-            return 'YOUTUBE';
+        else if (window.location.hostname === 'www.youtube.com') return 'YOUTUBE';
         else return null;
     }
 
-    /**
-     * Left click => download video
-     * @returns {void}
-     */
+    function elementInContainer(container, element) {
+        return container.contains(element);
+    }
+
     async function leftClick() {
-        if (!window.location.pathname.slice(1))
-            return notify('Hey!', 'The video/song player is not open, I cannot see the link to download!'); // do nothing if video is not focused
+        const isYtMusic = detectYoutubeService() === 'MUSIC';
 
-        if (YOUTUBE_SERVICE !== 'MUSIC' && !VIDEO_DATA)
-            return notify("The video data hasn't been loaded yet", 'Try again in a few seconds...');
-
-        try {
-            // window.open(await Cobalt(window.location.href), '_blank');
-            eval(replacePlaceholders(codeTextArea.value));
-        } catch (err) {
-            notify('An error occurred!', JSON.stringify(err));
-        }
-    }
-
-    /**
-     * Right click => download audio
-     * @param {Event} e The right click event
-     * @returns {void}
-     */
-    async function rightClick(e) {
-        e.preventDefault();
-
-        if (!window.location.pathname.slice(1))
-            return notify('Hey!', 'The video/song player is not open, I cannot see the link to download!'); // do nothing if video is not focused
-
-        try {
-            window.open(await Cobalt(window.location.href, true), '_blank');
-        } catch (err) {
-            notify('An error occurred!', JSON.stringify(err));
-        }
-
-        return false;
-    }
-
-    /**
-     * Middle mouse button click => open menu
-     * @param {MouseEvent} e The mouse event
-     * @returns {false}
-     */
-    function middleClick(e) {
-        if (e.buttons !== 4) return;
-        e.preventDefault();
-        menuPopup.style.display = 'block';
-        menuPopup.classList.add('opened');
-        menuPopup.classList.remove('closed');
-
-        notify(
-            'Wait! Read this first!',
-            `Here you can set up the code you want to be executed when LEFT CLICKING the download button.
-            <br><br>It requires JavaScript coding knowledge, so proceed only if you know what you are doing.
-            <br><br> You have access to <b>some</b> <a target="_blank" href="https://violentmonkey.github.io/api/gm/">GM API functions</a>, described in the userscript header.
-            <br><br><a target="_blank" href="https://github.com/madkarmaa/youtube-downloader/docs/PLACEHOLDERS.md">Read more</a>`
-        );
-
-        return false;
-    }
-
-    /**
-     * Renderer process
-     * @param {CustomEvent} event The YouTube custom navigation event
-     * @returns {Promise<void>}
-     */
-    async function RENDERER(event) {
-        logger('Checking if user is watching');
-        // do nothing if the user isn't watching any media
-        if (!event?.detail?.endpoint?.watchEndpoint?.videoId && !event?.detail?.endpoint?.reelWatchEndpoint?.videoId) {
-            logger('User is not watching');
+        if (!isYtMusic && !videoDataReady) {
+            logger('warn', 'Video data not ready');
+            new Notification('Wait!', 'The video data is not ready yet, try again in a few seconds.', 'popup', false);
+            return;
+        } else if (isYtMusic && !window.location.pathname.startsWith('/watch')) {
+            logger('warn', 'Video URL not avaiable');
+            new Notification(
+                'Wait!',
+                'Open the music player so the song link is visible, then try again.',
+                'popup',
+                false
+            );
             return;
         }
-        logger('User is watching');
 
-        // wait for the button to copy to appear before continuing
-        logger('Waiting for the button to copy to appear');
-        let buttonToCopy;
-        switch (YOUTUBE_SERVICE) {
-            case 'YOUTUBE':
-                buttonToCopy = waitForElement(
-                    'div#player div.ytp-chrome-controls div.ytp-right-controls button[aria-label="Settings"]'
-                );
-                break;
-            case 'MUSIC':
-                buttonToCopy = waitForElement(
-                    '[slot="player-bar"] div.middle-controls div.middle-controls-buttons #like-button-renderer #button-shape-dislike button[aria-label="Dislike"]'
-                );
-                break;
-            case 'SHORTS':
-                buttonToCopy = waitForElement(
-                    'div#actions.ytd-reel-player-overlay-renderer div#comments-button button'
-                );
-                break;
-
-            default:
-                break;
-        }
-
-        // cancel rendering after 5 seconds of the button not appearing in the document
-        buttonToCopy = await Promise.race([timeout(5), buttonToCopy]);
-        logger('Button to copy is:', buttonToCopy);
-
-        // create the download button
-        const downloadButton = document.createElement('button');
-        downloadButton.id = buttonId;
-        downloadButton.title =
-            'Click to download as video\nRight click to download as audio\nMMB to open advanced settings menu';
-        downloadButton.innerHTML =
-            '<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" height="24" viewBox="0 0 24 24" width="24" focusable="false" style="pointer-events: none; display: block; width: 100%; height: 100%;"><path d="M17 18v1H6v-1h11zm-.5-6.6-.7-.7-3.8 3.7V4h-1v10.4l-3.8-3.8-.7.7 5 5 5-4.9z"></path></svg>';
-        downloadButton.classList = buttonToCopy.classList;
-
-        if (YOUTUBE_SERVICE === 'YOUTUBE') downloadButton.classList.add('ytp-hd-quality-badge');
-        downloadButton.classList.add(YOUTUBE_SERVICE);
-        logger('Download button created:', downloadButton);
-
-        downloadButton.addEventListener('click', leftClick);
-        downloadButton.addEventListener('contextmenu', rightClick);
-        downloadButton.addEventListener('mousedown', middleClick);
-        logger('Event listeners added to the download button');
-
-        switch (YOUTUBE_SERVICE) {
-            case 'YOUTUBE':
-                logger('Waiting for the player buttons row to appear');
-                const YTButtonsRow = await waitForElement('div#player div.ytp-chrome-controls div.ytp-right-controls');
-                logger('Buttons row is now available');
-
-                if (!YTButtonsRow.querySelector('#' + buttonId))
-                    YTButtonsRow.insertBefore(downloadButton, YTButtonsRow.firstChild);
-                logger('Download button added to the buttons row');
-
-                break;
-            case 'MUSIC':
-                logger('Waiting for the player buttons row to appear');
-                const YTMButtonsRow = await waitForElement(
-                    '[slot="player-bar"] div.middle-controls div.middle-controls-buttons'
-                );
-                logger('Buttons row is now available');
-
-                if (!YTMButtonsRow.querySelector('#' + buttonId))
-                    YTMButtonsRow.insertBefore(downloadButton, YTMButtonsRow.firstChild);
-                logger('Download button added to the buttons row');
-
-                break;
-            case 'SHORTS':
-                // wait for the first reel to load
-                logger('Waiting for the reels to load');
-                await waitForElement('div#actions.ytd-reel-player-overlay-renderer div#like-button');
-                logger('Reels loaded');
-
-                document.querySelectorAll('div#actions.ytd-reel-player-overlay-renderer').forEach((buttonsCol) => {
-                    if (!buttonsCol.getAttribute('data-button-added') && !buttonsCol.querySelector(buttonId)) {
-                        const dlButtonCopy = downloadButton.cloneNode(true);
-                        dlButtonCopy.addEventListener('click', leftClick);
-                        dlButtonCopy.addEventListener('contextmenu', rightClick);
-                        dlButtonCopy.addEventListener('mousedown', middleClick);
-
-                        buttonsCol.insertBefore(dlButtonCopy, buttonsCol.querySelector('div#like-button'));
-                        buttonsCol.setAttribute('data-button-added', true);
-                    }
-                });
-                logger('Download buttons added to reels');
-
-                break;
-
-            default:
-                break;
+        try {
+            logger('info', 'Download started');
+            window.open(
+                await Cobalt(
+                    isYtMusic
+                        ? window.location.href.replace('music.youtube.com', 'www.youtube.com')
+                        : VIDEO_DATA.video_url
+                ),
+                '_blank'
+            );
+            logger('info', 'Download completed');
+        } catch (err) {
+            logger('error', JSON.parse(JSON.stringify(err)));
         }
     }
 
-    /**
-     * Replace the placeholders in a string with their values
-     * @param {*} inputString The input string
-     * @returns {String} The string with the parsed placeholders
-     */
-    function replacePlaceholders(inputString) {
-        return inputString.replace(/{{\s*([^}\s]+)\s*}}/g, (match, placeholder) => VIDEO_DATA[placeholder] || match);
-    }
+    async function rightClick(e) {
+        const isYtMusic = detectYoutubeService() === 'MUSIC';
 
-    let VIDEO_DATA;
-    document.addEventListener('yt-player-updated', (e) => {
-        const temp_video_data = e.detail.getVideoData();
-        VIDEO_DATA = {
-            current_time: e.detail.getCurrentTime(),
-            video_duration: e.detail.getDuration(),
-            video_url: e.detail.getVideoUrl(),
-            video_author: temp_video_data?.author,
-            video_title: temp_video_data?.title,
-            video_id: temp_video_data?.video_id,
-        };
-        logger('Video data updated', VIDEO_DATA);
-    });
+        e.preventDefault();
 
-    let YOUTUBE_SERVICE = updateService();
-
-    const menuPopup = document.createElement('div');
-    menuPopup.id = `yt-downloader-menu-${randomNumber}`;
-    menuPopup.style.display = 'none';
-    menuPopup.classList.add('closed');
-
-    const codeTextArea = document.createElement('textarea');
-
-    const resetButton = document.createElement('button');
-    resetButton.textContent = 'Reset to default';
-    resetButton.addEventListener('click', () => {
-        codeTextArea.value = `(async () => {\n\n${Cobalt.toString()}\n\nwindow.open(await Cobalt(window.location.href), '_blank');\n\n})();`;
-        logger('Code reset');
-    });
-
-    menuPopup.append(codeTextArea, resetButton);
-
-    codeTextArea.value =
-        localStorage.getItem('yt-dl-code') ||
-        `(async () => {\n\n${Cobalt.toString()}\n\nwindow.open(await Cobalt(window.location.href), '_blank');\n\n})();`;
-    localStorage.setItem('yt-dl-code', codeTextArea.value);
-    logger('Code retrieved and set to textarea');
-
-    menuPopup.addEventListener('animationend', (e) => {
-        if (e.animationName === 'closeMenu') e.target.style.display = 'none';
-    });
-
-    document.addEventListener('click', (e) => {
-        if (menuPopup.style.display !== 'none' && e.target !== menuPopup && !menuPopup.contains(e.target)) {
-            e.preventDefault();
-            menuPopup.classList.add('closed');
-            menuPopup.classList.remove('opened');
-            logger('Menu closed');
-            localStorage.setItem('yt-dl-code', codeTextArea.value);
-            logger('Code saved to localStorage');
+        if (!isYtMusic && !videoDataReady) {
+            logger('warn', 'Video data not ready');
+            new Notification('Wait!', 'The video data is not ready yet, try again in a few seconds.', 'popup', false);
             return false;
+        } else if (isYtMusic && !window.location.pathname.startsWith('/watch')) {
+            logger('warn', 'Video URL not avaiable');
+            new Notification(
+                'Wait!',
+                'Open the music player so the song link is visible, then try again.',
+                'popup',
+                false
+            );
+            return;
         }
+
+        try {
+            logger('info', 'Download started');
+            window.open(
+                await Cobalt(
+                    isYtMusic
+                        ? window.location.href.replace('music.youtube.com', 'www.youtube.com')
+                        : VIDEO_DATA.video_url,
+                    true
+                ),
+                '_blank'
+            );
+            logger('info', 'Download completed');
+        } catch (err) {
+            logger('error', JSON.parse(JSON.stringify(err)));
+        }
+
+        return false;
+    }
+
+    // https://www.30secondsofcode.org/js/s/element-is-visible-in-viewport/
+    function elementIsVisibleInViewport(el, partiallyVisible = false) {
+        const { top, left, bottom, right } = el.getBoundingClientRect();
+        const { innerHeight, innerWidth } = window;
+        return partiallyVisible
+            ? ((top > 0 && top < innerHeight) || (bottom > 0 && bottom < innerHeight)) &&
+                  ((left > 0 && left < innerWidth) || (right > 0 && right < innerWidth))
+            : top >= 0 && left >= 0 && bottom <= innerHeight && right <= innerWidth;
+    }
+
+    async function appendDownloadButton(e) {
+        const ytContainerSelector =
+            '#movie_player > div.ytp-chrome-bottom > div.ytp-chrome-controls > div.ytp-right-controls';
+        const ytmContainerSelector =
+            '#layout > ytmusic-player-bar > div.middle-controls.style-scope.ytmusic-player-bar > div.middle-controls-buttons.style-scope.ytmusic-player-bar';
+        const ytsContainerSelector = '#actions.style-scope.ytd-reel-player-overlay-renderer';
+
+        // ===== templates, don't use, just clone the node =====
+        const downloadIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        downloadIcon.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+        downloadIcon.setAttribute('fill', 'currentColor');
+        downloadIcon.setAttribute('height', '24');
+        downloadIcon.setAttribute('viewBox', '0 0 24 24');
+        downloadIcon.setAttribute('width', '24');
+        downloadIcon.setAttribute('focusable', 'false');
+        downloadIcon.style.pointerEvents = 'none';
+        downloadIcon.style.display = 'block';
+        downloadIcon.style.width = '100%';
+        downloadIcon.style.height = '100%';
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', 'M17 18v1H6v-1h11zm-.5-6.6-.7-.7-3.8 3.7V4h-1v10.4l-3.8-3.8-.7.7 5 5 5-4.9z');
+        downloadIcon.appendChild(path);
+
+        const downloadButton = document.createElement('button');
+        downloadButton.id = 'ytdl-download-button';
+        downloadButton.classList.add('ytp-button');
+        downloadButton.title = 'Left click to download as video, right click as audio only';
+        downloadButton.appendChild(downloadIcon);
+        // ===== end templates =====
+
+        switch (detectYoutubeService()) {
+            case 'WATCH':
+                const ytCont = await waitForElement(ytContainerSelector);
+                logger('info', 'Download button container found\n\n', ytCont);
+
+                if (elementInContainer(ytCont, ytCont.querySelector('#ytdl-download-button'))) {
+                    logger('warn', 'Download button already in container');
+                    break;
+                }
+
+                const ytDlBtnClone = downloadButton.cloneNode(true);
+                ytDlBtnClone.classList.add('YT');
+                ytDlBtnClone.addEventListener('click', leftClick);
+                ytDlBtnClone.addEventListener('contextmenu', rightClick);
+                logger('info', 'Download button created\n\n', ytDlBtnClone);
+
+                ytCont.insertBefore(ytDlBtnClone, ytCont.firstChild);
+                logger('info', 'Download button inserted in container');
+
+                break;
+
+            case 'MUSIC':
+                const ytmCont = await waitForElement(ytmContainerSelector);
+                logger('info', 'Download button container found\n\n', ytmCont);
+
+                if (elementInContainer(ytmCont, ytmCont.querySelector('#ytdl-download-button'))) {
+                    logger('warn', 'Download button already in container');
+                    break;
+                }
+
+                const ytmDlBtnClone = downloadButton.cloneNode(true);
+                ytmDlBtnClone.classList.add('YTM');
+                ytmDlBtnClone.addEventListener('click', leftClick);
+                ytmDlBtnClone.addEventListener('contextmenu', rightClick);
+                logger('info', 'Download button created\n\n', ytmDlBtnClone);
+
+                ytmCont.insertBefore(ytmDlBtnClone, ytmCont.firstChild);
+                logger('info', 'Download button inserted in container');
+
+                break;
+
+            case 'SHORTS':
+                if (e.type !== 'yt-navigate-finish') return;
+
+                await waitForElement(ytsContainerSelector); // wait for the UI to finish loading
+
+                const visibleYtsConts = Array.from(document.querySelectorAll(ytsContainerSelector)).filter((el) =>
+                    elementIsVisibleInViewport(el)
+                );
+                logger('info', 'Download button containers found\n\n', visibleYtsConts);
+
+                visibleYtsConts.forEach((ytsCont) => {
+                    if (elementInContainer(ytsCont, ytsCont.querySelector('#ytdl-download-button'))) {
+                        logger('warn', 'Download button already in container');
+                        return;
+                    }
+
+                    const ytsDlBtnClone = downloadButton.cloneNode(true);
+                    ytsDlBtnClone.classList.add(
+                        'YTS',
+                        'yt-spec-button-shape-next',
+                        'yt-spec-button-shape-next--tonal',
+                        'yt-spec-button-shape-next--mono',
+                        'yt-spec-button-shape-next--size-l',
+                        'yt-spec-button-shape-next--icon-button'
+                    );
+                    ytsDlBtnClone.addEventListener('click', leftClick);
+                    ytsDlBtnClone.addEventListener('contextmenu', rightClick);
+                    logger('info', 'Download button created\n\n', ytsDlBtnClone);
+
+                    ytsCont.insertBefore(ytsDlBtnClone, ytsCont.firstChild);
+                    logger('info', 'Download button inserted in container');
+                });
+
+                break;
+
+            default:
+                return;
+        }
+    }
+
+    async function devStuff() {
+        if (!DEV_MODE) return;
+
+        logger('info', 'Current service is: ' + detectYoutubeService());
+    }
+    // ===== END METHODS =====
+
+    GM_addStyle(`
+#ytdl-sideMenu {
+    min-height: 100vh;
+    z-index: 9998;
+    position: absolute;
+    top: 0;
+    left: -100vw;
+    width: 50vw;
+    background-color: var(--yt-spec-base-background);
+    border-right: 2px solid var(--yt-spec-static-grey);
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 2rem 2.5rem;
+    font-family: "Roboto", "Arial", sans-serif;
+}
+
+#ytdl-sideMenu.opened {
+    animation: openMenu .3s linear forwards;
+}
+
+#ytdl-sideMenu.closed {
+    animation: closeMenu .3s linear forwards;
+}
+
+#ytdl-sideMenu .header {
+    text-align: center;
+    font-size: 2.5rem;
+    color: var(--yt-brand-youtube-red);
+}
+
+#ytdl-sideMenu .setting-row {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+#ytdl-sideMenu .setting-label {
+    font-size: 1.8rem;
+    color: var(--yt-brand-youtube-red);
+}
+
+#ytdl-sideMenu .setting-description {
+    font-size: 1.4rem;
+    color: var(--yt-spec-text-primary);
+}
+
+.ytdl-switch {
+  display: inline-block;
+}
+
+.ytdl-switch input {
+  display: none;
+}
+
+.ytdl-switch label {
+  display: block;
+  width: 50px;
+  height: 19.5px;
+  padding: 3px;
+  border-radius: 15px;
+  border: 2px solid var(--yt-spec-inverted-background);
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.ytdl-switch label::after {
+  content: "";
+  display: inherit;
+  width: 20px;
+  height: 20px;
+  border-radius: 12px;
+  background: var(--yt-spec-inverted-background);
+  transition: 0.3s;
+}
+
+.ytdl-switch input:checked ~ label {
+  border-color: var(--yt-spec-themed-green);
+}
+
+.ytdl-switch input:checked ~ label::after {
+  translate: 30px 0;
+  background: var(--yt-spec-themed-green);
+}
+
+.ytdl-switch input:disabled ~ label {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ytdl-notification {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    position: fixed;
+    top: 50vh;
+    left: 50vw;
+    transform: translate(-50%, -50%);
+    background-color: var(--yt-spec-base-background);
+    border: 2px solid var(--yt-spec-static-grey);
+    border-radius: 8px;
+    color: var(--yt-spec-text-primary);
+    z-index: 9999;
+    padding: 1.5rem 1.6rem;
+    font-family: "Roboto", "Arial", sans-serif;
+    font-size: 1.4rem;
+    width: fit-content;
+    height: fit-content;
+    max-width: 40vw;
+    max-height: 50vh;
+    word-wrap: break-word;
+    line-height: var(--yt-caption-line-height);
+}
+
+.ytdl-notification.opened {
+    animation: openNotif .3s linear forwards;
+}
+
+.ytdl-notification.closed {
+    animation: closeNotif .3s linear forwards;
+}
+
+.ytdl-notification h2 {
+    color: var(--yt-brand-youtube-red);
+}
+
+.ytdl-notification > div {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.ytdl-notification > button {
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+    border: 2px solid var(--yt-spec-static-grey);
+    border-radius: 8px;
+    background-color: var(--yt-brand-medium-red);
+    padding: 0.7rem 0.8rem;
+    color: #fff;
+    font-weight: 600;
+}
+
+.ytdl-notification button:hover {
+    background-color: var(--yt-spec-red-70);
+}
+
+#ytdl-download-button {
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--yt-spec-text-primary);
+    cursor: pointer;
+    transition: color 0.2s ease-in-out;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#ytdl-download-button:hover {
+    color: var(--yt-brand-youtube-red);
+}
+
+#ytdl-download-button.YTM {
+    transform: scale(1.5);
+    margin: 0 1rem;
+}
+
+#ytdl-download-button > svg {
+    transform: translateX(5%);
+}
+
+@keyframes openMenu {
+    0% {
+        left: -100vw;
+    }
+
+    100% {
+        left: 0;
+    }
+}
+
+@keyframes closeMenu {
+    0% {
+        left: 0;
+    }
+
+    100% {
+        left: -100vw;
+    }
+}
+
+@keyframes openNotif {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes closeNotif {
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+`);
+    logger('info', 'Custom styles added');
+
+    hookPlayerEvent(updateVideoData);
+    hookNavigationEvents(appendDownloadButton, devStuff);
+
+    // functions that require the DOM to exist
+    window.addEventListener('DOMContentLoaded', () => {
+        appendSideMenu();
+        appendDownloadButton();
+        manageNotifications();
     });
-    document.body.appendChild(menuPopup);
-    logger('Menu created', menuPopup);
-
-    logger('Detecting updates');
-    if (GM_info.script.version !== localStorage.getItem('yt-dl-version')) {
-        resetButton.click();
-        localStorage.setItem('yt-dl-version', GM_info.script.version);
-        logger('Version updated in localStorage');
-    } else logger('Version up to date in localStorage');
-
-    ['yt-navigate', 'yt-navigate-finish'].forEach((evName) =>
-        document.addEventListener(evName, (e) => {
-            YOUTUBE_SERVICE = updateService();
-            logger('Service is:', YOUTUBE_SERVICE);
-            if (!YOUTUBE_SERVICE) return;
-            RENDERER(e);
-        })
-    );
 })();
