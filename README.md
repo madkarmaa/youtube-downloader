@@ -25,6 +25,10 @@ _Support for **YouTube**, **YouTube shorts** and **YouTube music**!_
 
 **Click** the download button to download as video (`.mp4` format), or **right click** to download as audio (`.mp3` format).
 
+![screenshot-menu](https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/images/screenshot-menu.png)
+
+Press **P** on the keyboard to open the script's settings menu.
+
 <b>
     <img src="https://raw.githubusercontent.com/wukko/cobalt/current/src/front/icons/android-chrome-512x512.png" alt="cobalt-icon" width=22>
     This userscript uses the <a href="https://github.com/wukko/cobalt">Cobalt</a> API to download the videos, so definitely go check them out.
