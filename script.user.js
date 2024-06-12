@@ -6,7 +6,7 @@
 // @supportURL      https://github.com/madkarmaa/youtube-downloader
 // @updateURL       https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
 // @downloadURL     https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
-// @version         3.0.1
+// @version         3.0.2
 // @description     A simple userscript to download YouTube videos in MAX QUALITY
 // @author          mk_
 // @match           *://*.youtube.com/*
@@ -20,7 +20,7 @@
 // ==/UserScript==
 
 (async () => {
-    'use strict';
+    ('use strict');
 
     // abort if not on youtube or youtube music
     if (!detectYoutubeService()) {
@@ -238,6 +238,17 @@
         });
     }
 
+    // https://stackoverflow.com/a/10344293
+    function isTyping() {
+        const el = document.activeElement;
+        return (
+            el &&
+            ((el.tagName.toLowerCase() === 'input' && el.type === 'text') ||
+                el.tagName.toLowerCase() === 'textarea' ||
+                String(el.getAttribute('contenteditable')).toLowerCase() === 'true')
+        );
+    }
+
     async function appendSideMenu() {
         const sideMenu = document.createElement('div');
         sideMenu.id = 'ytdl-sideMenu';
@@ -312,6 +323,7 @@
 
         document.addEventListener('keydown', (e) => {
             if (e.key !== 'p') return;
+            if (isTyping()) return;
 
             if (sideMenu.style.display === 'none') {
                 sideMenu.style.top = window.scrollY + 'px';
