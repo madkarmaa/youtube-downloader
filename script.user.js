@@ -6,7 +6,7 @@
 // @supportURL      https://github.com/madkarmaa/youtube-downloader
 // @updateURL       https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
 // @downloadURL     https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
-// @version         3.0.3
+// @version         3.0.4
 // @description     A simple userscript to download YouTube videos in MAX QUALITY
 // @author          mk_
 // @match           *://*.youtube.com/*
@@ -618,46 +618,46 @@
 }
 
 .ytdl-switch {
-  display: inline-block;
+    display: inline-block;
 }
 
 .ytdl-switch input {
-  display: none;
+    display: none;
 }
 
 .ytdl-switch label {
-  display: block;
-  width: 50px;
-  height: 19.5px;
-  padding: 3px;
-  border-radius: 15px;
-  border: 2px solid var(--yt-spec-inverted-background);
-  cursor: pointer;
-  transition: 0.3s;
+    display: block;
+    width: 50px;
+    height: 19.5px;
+    padding: 3px;
+    border-radius: 15px;
+    border: 2px solid var(--yt-brand-medium-red);
+    cursor: pointer;
+    transition: 0.3s;
 }
 
 .ytdl-switch label::after {
-  content: "";
-  display: inherit;
-  width: 20px;
-  height: 20px;
-  border-radius: 12px;
-  background: var(--yt-spec-inverted-background);
-  transition: 0.3s;
+    content: "";
+    display: inherit;
+    width: 20px;
+    height: 20px;
+    border-radius: 12px;
+    background: var(--yt-brand-medium-red);
+    transition: 0.3s;
 }
 
 .ytdl-switch input:checked ~ label {
-  border-color: var(--yt-spec-themed-green);
+    border-color: var(--yt-spec-light-green);
 }
 
 .ytdl-switch input:checked ~ label::after {
-  translate: 30px 0;
-  background: var(--yt-spec-themed-green);
+    translate: 30px 0;
+    background: var(--yt-spec-light-green);
 }
 
 .ytdl-switch input:disabled ~ label {
-  opacity: 0.5;
-  cursor: not-allowed;
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .ytdl-notification {
@@ -739,7 +739,7 @@
 }
 
 #ytdl-download-button > svg {
-    transform: translateX(5%);
+    transform: translateX(3.35%);
 }
 
 @keyframes openMenu {
