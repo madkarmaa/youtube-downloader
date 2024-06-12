@@ -6,7 +6,7 @@
 // @supportURL      https://github.com/madkarmaa/youtube-downloader
 // @updateURL       https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
 // @downloadURL     https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
-// @version         3.0.2
+// @version         3.0.3
 // @description     A simple userscript to download YouTube videos in MAX QUALITY
 // @author          mk_
 // @match           *://*.youtube.com/*
@@ -20,7 +20,7 @@
 // ==/UserScript==
 
 (async () => {
-    ('use strict');
+    'use strict';
 
     // abort if not on youtube or youtube music
     if (!detectYoutubeService()) {
