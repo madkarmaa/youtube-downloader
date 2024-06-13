@@ -6,11 +6,11 @@
 // @supportURL      https://github.com/madkarmaa/youtube-downloader
 // @updateURL       https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
 // @downloadURL     https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
-// @version         3.0.4
+// @version         3.1.0
 // @description     A simple userscript to download YouTube videos in MAX QUALITY
 // @author          mk_
 // @match           *://*.youtube.com/*
-// @connect         co.wuk.sh
+// @connect         api.cobalt.tools
 // @connect         raw.githubusercontent.com
 // @grant           GM_info
 // @grant           GM_addStyle
@@ -20,7 +20,7 @@
 // ==/UserScript==
 
 (async () => {
-    'use strict';
+    'use strict'; // prettier-ignore
 
     // abort if not on youtube or youtube music
     if (!detectYoutubeService()) {
@@ -64,7 +64,7 @@
             // https://github.com/wukko/cobalt/blob/current/docs/api.md
             GM_xmlhttpRequest({
                 method: 'POST',
-                url: 'https://co.wuk.sh/api/json',
+                url: 'https://api.cobalt.tools/api/json',
                 headers: {
                     'Cache-Control': 'no-cache',
                     Accept: 'application/json',
