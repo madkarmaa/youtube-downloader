@@ -25,7 +25,7 @@ inquirer
     .then((answers) => {
         const newNotification = {
             title: answers.title,
-            body: answers.body.replace('\\n', '\n'),
+            body: answers.body.replaceAll('\\n', '\n'),
             uuid: genUUID(title),
         };
 
