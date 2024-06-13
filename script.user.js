@@ -6,7 +6,7 @@
 // @supportURL      https://github.com/madkarmaa/youtube-downloader
 // @updateURL       https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
 // @downloadURL     https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
-// @version         3.2.0
+// @version         3.2.1
 // @description     A simple userscript to download YouTube videos in MAX QUALITY
 // @author          mk_
 // @match           *://*.youtube.com/*
@@ -768,6 +768,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.7rem;
+    margin: 1rem 0;
 }
 
 #ytdl-sideMenu .advanced-options.opened {
