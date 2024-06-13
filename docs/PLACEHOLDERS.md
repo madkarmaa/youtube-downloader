@@ -1,14 +1,10 @@
-# What placeholders are you talking about?
+The script provides some sort of "API" you can use to access _some_ video data. Placeholders are replaced with their corresponding value.
 
-When you [MMB click](https://www.minitool.com/images/uploads/news/2019/03/use-mouse-middle-click-button-windows/use-mouse-middle-click-button-windows-thumbnail.jpg) on the download button, you're greeted with a text input where you can write the code to be executed when [LMB clicking](https://freesvg.org/img/1543784094.png) on said button. Placeholders are used to retrieve a video's data and use it in said code, without having to type it all down to grab the data by yourself.
+Let's say there's a key called `banana` and its associated value is `yellow`. If you create a string like so: `Bananas are {{ banana }}` then the script will replace the placeholders with its corresponding value, returning `Bananas are yellow`.
 
 ## Example placeholder: `{{ placeholder_name }}`
 
 ## Currently supported placeholder names
-
-```
-current_time
-```
 
 ```
 video_duration

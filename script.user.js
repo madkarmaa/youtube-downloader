@@ -6,7 +6,7 @@
 // @supportURL      https://github.com/madkarmaa/youtube-downloader
 // @updateURL       https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
 // @downloadURL     https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
-// @version         3.1.0
+// @version         3.2.0
 // @description     A simple userscript to download YouTube videos in MAX QUALITY
 // @author          mk_
 // @match           *://*.youtube.com/*
@@ -29,6 +29,14 @@
     }
 
     // ===== VARIABLES =====
+    let ADVANCED_SETTINGS = localStorage.getItem('ytdl-advanced-settings')
+        ? JSON.parse(localStorage.getItem('ytdl-advanced-settings'))
+        : {
+              enabled: false,
+              openUrl: '',
+          };
+    localStorage.setItem('ytdl-advanced-settings', JSON.stringify(ADVANCED_SETTINGS));
+
     let DEV_MODE = String(localStorage.getItem('ytdl-dev-mode')).toLowerCase() === 'true';
     let SHOW_NOTIFICATIONS =
         localStorage.getItem('ytdl-notif-enabled') === null
@@ -46,7 +54,6 @@
         video_title: null,
         video_id: null,
     };
-
     let videoDataReady = false;
     // ===== END VARIABLES =====
 
@@ -243,10 +250,14 @@
         const el = document.activeElement;
         return (
             el &&
-            ((el.tagName.toLowerCase() === 'input' && el.type === 'text') ||
+            (el.tagName.toLowerCase() === 'input' ||
                 el.tagName.toLowerCase() === 'textarea' ||
                 String(el.getAttribute('contenteditable')).toLowerCase() === 'true')
         );
+    }
+
+    function replacePlaceholders(inputString) {
+        return inputString.replace(/{{\s*([^}\s]+)\s*}}/g, (match, placeholder) => VIDEO_DATA[placeholder] || match);
     }
 
     async function appendSideMenu() {
@@ -279,6 +290,7 @@
         switchContainer.append(switchCheckbox, switchLabel);
         // ===== end templates =====
 
+        // NOTIFICATIONS
         const notifContainer = sideMenuSettingContainer.cloneNode(true);
         notifContainer.querySelector('.setting-label').textContent = 'Notifications';
         notifContainer.querySelector('.setting-description').textContent =
@@ -295,6 +307,7 @@
         notifContainer.appendChild(notifSwitch);
         sideMenu.appendChild(notifContainer);
 
+        // DEVELOPER MODE
         const devModeContainer = sideMenuSettingContainer.cloneNode(true);
         devModeContainer.querySelector('.setting-label').textContent = 'Developer mode';
         devModeContainer.querySelector('.setting-description').textContent =
@@ -312,6 +325,71 @@
         devModeContainer.appendChild(devModeSwitch);
         sideMenu.appendChild(devModeContainer);
 
+        // ADVANCED SETTINGS
+        const advancedSettingsContainer = sideMenuSettingContainer.cloneNode(true);
+        advancedSettingsContainer.querySelector('.setting-label').textContent = 'Advanced settings';
+        advancedSettingsContainer.querySelector('.setting-description').textContent =
+            'FOR EXPERIENCED USERS ONLY. Modify the behaviour of the download button.';
+
+        const advancedOptionsContainer = document.createElement('div');
+        advancedOptionsContainer.classList.add('advanced-options', ADVANCED_SETTINGS.enabled ? 'opened' : 'closed');
+        advancedOptionsContainer.style.display = ADVANCED_SETTINGS.enabled ? 'flex' : 'none';
+        hideOnAnimationEnd(advancedOptionsContainer, 'closeNotif');
+
+        const advancedSwitch = switchContainer.cloneNode(true);
+        advancedSwitch.querySelector('input').checked = ADVANCED_SETTINGS.enabled;
+        advancedSwitch.querySelector('input').id = 'ytdl-advanced-switch';
+        advancedSwitch.querySelector('label').setAttribute('for', 'ytdl-advanced-switch');
+        advancedSwitch.querySelector('input').addEventListener('change', (e) => {
+            ADVANCED_SETTINGS.enabled = e.target.checked;
+            localStorage.setItem('ytdl-advanced-settings', JSON.stringify(ADVANCED_SETTINGS));
+
+            if (e.target.checked) {
+                advancedOptionsContainer.style.display = 'flex';
+                advancedOptionsContainer.classList.remove('closed');
+                advancedOptionsContainer.classList.add('opened');
+            } else {
+                advancedOptionsContainer.classList.remove('opened');
+                advancedOptionsContainer.classList.add('closed');
+            }
+
+            logger('info', `Advanced settings ${ADVANCED_SETTINGS.enabled ? 'enabled' : 'disabled'}`);
+        });
+        advancedSettingsContainer.appendChild(advancedSwitch);
+
+        const openUrlLabel = document.createElement('label');
+        openUrlLabel.setAttribute('for', 'advanced-settings-open-url');
+        openUrlLabel.textContent = 'Open the given URL in a new window. GET request only.';
+
+        const placeholdersLink = document.createElement('a');
+        placeholdersLink.href = 'https://github.com/madkarmaa/youtube-downloader/blob/main/docs/PLACEHOLDERS.md';
+        placeholdersLink.target = '_blank';
+        placeholdersLink.textContent = 'Use placeholders to access video data. Click to know about placeholders';
+
+        openUrlLabel.appendChild(placeholdersLink);
+
+        const openUrlInput = document.createElement('input');
+        openUrlInput.id = 'advanced-settings-open-url';
+        openUrlInput.type = 'url';
+        openUrlInput.placeholder = 'URL to open';
+        openUrlInput.value = ADVANCED_SETTINGS.openUrl ?? null;
+        openUrlInput.addEventListener('focusout', (e) => {
+            if (e.target.checkValidity()) {
+                ADVANCED_SETTINGS.openUrl = e.target.value;
+                localStorage.setItem('ytdl-advanced-settings', JSON.stringify(ADVANCED_SETTINGS));
+                logger('info', `Advanced settings: URL to open set to "${e.target.value}"`);
+            } else {
+                logger('error', `Invalid URL to open: "${e.target.value}"`);
+                alert(e.target.validationMessage);
+                e.target.value = '';
+            }
+        });
+        advancedOptionsContainer.append(openUrlLabel, openUrlInput);
+
+        advancedSettingsContainer.appendChild(advancedOptionsContainer);
+        sideMenu.appendChild(advancedSettingsContainer);
+
+        // SIDE MENU EVENTS
         document.addEventListener('mousedown', (e) => {
             if (sideMenu.style.display !== 'none' && !sideMenu.contains(e.target)) {
                 sideMenu.classList.remove('opened');
@@ -387,14 +465,18 @@
 
         try {
             logger('info', 'Download started');
-            window.open(
-                await Cobalt(
-                    isYtMusic
-                        ? window.location.href.replace('music.youtube.com', 'www.youtube.com')
-                        : VIDEO_DATA.video_url
-                ),
-                '_blank'
-            );
+
+            if (!ADVANCED_SETTINGS.enabled)
+                window.open(
+                    await Cobalt(
+                        isYtMusic
+                            ? window.location.href.replace('music.youtube.com', 'www.youtube.com')
+                            : VIDEO_DATA.video_url
+                    ),
+                    '_blank'
+                );
+            else if (ADVANCED_SETTINGS.openUrl) window.open(replacePlaceholders(ADVANCED_SETTINGS.openUrl));
+
             logger('info', 'Download completed');
         } catch (err) {
             logger('error', JSON.parse(JSON.stringify(err)));
@@ -424,15 +506,19 @@
 
         try {
             logger('info', 'Download started');
-            window.open(
-                await Cobalt(
-                    isYtMusic
-                        ? window.location.href.replace('music.youtube.com', 'www.youtube.com')
-                        : VIDEO_DATA.video_url,
-                    true
-                ),
-                '_blank'
-            );
+
+            if (!ADVANCED_SETTINGS.enabled)
+                window.open(
+                    await Cobalt(
+                        isYtMusic
+                            ? window.location.href.replace('music.youtube.com', 'www.youtube.com')
+                            : VIDEO_DATA.video_url,
+                        true
+                    ),
+                    '_blank'
+                );
+            else if (ADVANCED_SETTINGS.openUrl) window.open(replacePlaceholders(ADVANCED_SETTINGS.openUrl));
+
             logger('info', 'Download completed');
         } catch (err) {
             logger('error', JSON.parse(JSON.stringify(err)));
@@ -595,6 +681,24 @@
     animation: closeMenu .3s linear forwards;
 }
 
+#ytdl-sideMenu a {
+    color: var(--yt-brand-youtube-red);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+#ytdl-sideMenu a:hover {
+    text-decoration: underline;
+}
+
+#ytdl-sideMenu label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 1.4rem;
+    color: var(--yt-spec-text-primary);
+}
+
 #ytdl-sideMenu .header {
     text-align: center;
     font-size: 2.5rem;
@@ -660,6 +764,34 @@
     cursor: not-allowed;
 }
 
+#ytdl-sideMenu .advanced-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+}
+
+#ytdl-sideMenu .advanced-options.opened {
+    animation: openNotif 0.3s linear forwards;
+}
+#ytdl-sideMenu .advanced-options.closed {
+    animation: closeNotif .3s linear forwards;
+}
+
+#ytdl-sideMenu input[type="url"] {
+    background: none;
+    padding: 0.7rem 1rem;
+    border: none;
+    outline: none;
+    border-bottom: 2px solid var(--yt-spec-red-70);
+    color: var(--yt-spec-text-primary);
+    font-family: monospace;
+    transition: border-bottom-color 0.2s ease-in-out;
+}
+
+#ytdl-sideMenu input[type="url"]:focus {
+    border-bottom-color: var(--yt-brand-youtube-red);
+}
+
 .ytdl-notification {
     display: flex;
     flex-direction: column;
@@ -685,11 +817,11 @@
 }
 
 .ytdl-notification.opened {
-    animation: openNotif .3s linear forwards;
+    animation: openNotif 0.3s linear forwards;
 }
 
 .ytdl-notification.closed {
-    animation: closeNotif .3s linear forwards;
+    animation: closeNotif 0.3s linear forwards;
 }
 
 .ytdl-notification h2 {
