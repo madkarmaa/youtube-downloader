@@ -3,5 +3,10 @@
         "title": "Welcome to version 3.0!!!",
         "body": "Multiple UI updates to the YouTube website broke the script, and so I chose to rewrite it from scratch (sorta).\nThere's a new notification system I (the developer) can use to communicate with you, for example, for urgent updates.\nThe custom downloader is currently unavaiable due to a rewrite, since the old one was pretty much bare bones and totally not user friendly.\nEnjoy, and if you want, leave a star on the GitHub repository :)",
         "uuid": "f4b6a050-42f3-5b4e-9a15-1626554ecf2a"
+    },
+    {
+        "title": "Update 3.2.0",
+        "body": "The advanced options are back! (partially)\nOpen the settings menu by pressing P on your keyboard, but be careful, you should only modify the download behaviour if you know what you're doing!\\nMore options will be added in the future.\\nEnjoy, and if you want, leave a star on the GitHub repository :)",
+        "uuid": "2723be2c-0021-5a3b-8eb5-446eedff9789"
     }
 ]
