@@ -6,7 +6,7 @@
 // @supportURL      https://github.com/madkarmaa/youtube-downloader
 // @updateURL       https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
 // @downloadURL     https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
-// @version         3.3.0
+// @version         3.4.0
 // @description     A simple userscript to download YouTube videos in MAX QUALITY
 // @author          mk_
 // @match           *://*.youtube.com/*
@@ -319,13 +319,14 @@
 
         // VIDEO QUALITY CONTROL
         const qualityContainer = sideMenuSettingContainer.cloneNode(true);
-        qualityContainer.querySelector('.setting-label').textContent = 'Video quality';
+        qualityContainer.querySelector('.setting-label').textContent = 'Video download quality';
         qualityContainer.querySelector('.setting-description').textContent =
             'Control the resolution of the downloaded videos. Not all the resolutions are supported by some videos.';
 
         const qualitySelect = document.createElement('select');
         qualitySelect.name = 'dl-quality';
         qualitySelect.id = 'ytdl-dl-quality-select';
+        qualitySelect.disabled = ADVANCED_SETTINGS.enabled;
 
         Object.entries(QUALITIES).forEach(([name, value]) => {
             const qualityOption = document.createElement('option');
@@ -380,6 +381,8 @@
         advancedSwitch.querySelector('input').addEventListener('change', (e) => {
             ADVANCED_SETTINGS.enabled = e.target.checked;
             localStorage.setItem('ytdl-advanced-settings', JSON.stringify(ADVANCED_SETTINGS));
+
+            qualitySelect.disabled = e.target.checked;
 
             if (e.target.checked) {
                 advancedOptionsContainer.style.display = 'flex';
@@ -746,6 +749,7 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    transition: all 0.2s ease-in-out;
 }
 
 #ytdl-sideMenu .setting-label {
@@ -928,6 +932,14 @@
 #ytdl-dl-quality-select:focus {
     border-bottom-color: var(--yt-brand-youtube-red);
     border-left-color: var(--yt-brand-youtube-red);
+}
+
+#ytdl-sideMenu > div:has(> #ytdl-dl-quality-select:disabled) {
+    filter: grayscale(0.8);
+}
+
+#ytdl-dl-quality-select:disabled {
+    cursor: not-allowed;
 }
 
 @keyframes openMenu {
