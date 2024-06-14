@@ -6,7 +6,7 @@
 // @supportURL      https://github.com/madkarmaa/youtube-downloader
 // @updateURL       https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
 // @downloadURL     https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
-// @version         3.2.1
+// @version         3.2.2
 // @description     A simple userscript to download YouTube videos in MAX QUALITY
 // @author          mk_
 // @match           *://*.youtube.com/*
@@ -22,11 +22,8 @@
 (async () => {
     'use strict'; // prettier-ignore
 
-    // abort if not on youtube or youtube music
-    if (!detectYoutubeService()) {
-        console.log('\x1b[31m[YTDL]\x1b[0m Invalid YouTube service, aborting...');
-        return;
-    }
+    // abort if not on youtube or youtube music or if in an iframe
+    if (!detectYoutubeService() || window !== window.parent) return;
 
     // ===== VARIABLES =====
     let ADVANCED_SETTINGS = localStorage.getItem('ytdl-advanced-settings')
