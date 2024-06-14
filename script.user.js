@@ -6,7 +6,7 @@
 // @supportURL      https://github.com/madkarmaa/youtube-downloader
 // @updateURL       https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
 // @downloadURL     https://raw.githubusercontent.com/madkarmaa/youtube-downloader/main/script.user.js
-// @version         3.2.2
+// @version         3.3.0
 // @description     A simple userscript to download YouTube videos in MAX QUALITY
 // @author          mk_
 // @match           *://*.youtube.com/*
@@ -52,6 +52,19 @@
         video_id: null,
     };
     let videoDataReady = false;
+
+    // https://github.com/imputnet/cobalt/blob/current/docs/api.md#request-body-variables
+    const QUALITIES = {
+        MAX: 'max',
+        '2160p': '2160',
+        '1440p': '1440',
+        '1080p': '1080',
+        '720p': '720',
+        '480p': '480',
+        '360p': '360',
+        '240p': '240',
+        '144p': '144',
+    };
     // ===== END VARIABLES =====
 
     // ===== METHODS =====
@@ -65,7 +78,7 @@
     function Cobalt(videoUrl, audioOnly = false) {
         // Use Promise because GM.xmlHttpRequest behaves differently with different userscript managers
         return new Promise((resolve, reject) => {
-            // https://github.com/wukko/cobalt/blob/current/docs/api.md
+            // https://github.com/imputnet/cobalt/blob/current/docs/api.md
             GM_xmlhttpRequest({
                 method: 'POST',
                 url: 'https://api.cobalt.tools/api/json',
@@ -75,8 +88,8 @@
                     'Content-Type': 'application/json',
                 },
                 data: JSON.stringify({
-                    url: encodeURI(videoUrl), // video url
-                    vQuality: 'max', // always max quality
+                    url: encodeURI(videoUrl),
+                    vQuality: localStorage.getItem('ytdl-quality') ?? 'max',
                     filenamePattern: 'basic', // file name = video title
                     isAudioOnly: audioOnly,
                     disableMetadata: true, // privacy
@@ -303,6 +316,33 @@
         });
         notifContainer.appendChild(notifSwitch);
         sideMenu.appendChild(notifContainer);
+
+        // VIDEO QUALITY CONTROL
+        const qualityContainer = sideMenuSettingContainer.cloneNode(true);
+        qualityContainer.querySelector('.setting-label').textContent = 'Video quality';
+        qualityContainer.querySelector('.setting-description').textContent =
+            'Control the resolution of the downloaded videos. Not all the resolutions are supported by some videos.';
+
+        const qualitySelect = document.createElement('select');
+        qualitySelect.name = 'dl-quality';
+        qualitySelect.id = 'ytdl-dl-quality-select';
+
+        Object.entries(QUALITIES).forEach(([name, value]) => {
+            const qualityOption = document.createElement('option');
+            qualityOption.textContent = name;
+            qualityOption.value = value;
+            qualitySelect.appendChild(qualityOption);
+        });
+
+        qualitySelect.value = localStorage.getItem('ytdl-quality') ?? 'max';
+
+        qualitySelect.addEventListener('change', (e) => {
+            localStorage.setItem('ytdl-quality', String(e.target.value));
+            logger('info', `Download quality set to ${e.target.value}`);
+        });
+
+        qualityContainer.appendChild(qualitySelect);
+        sideMenu.appendChild(qualityContainer);
 
         // DEVELOPER MODE
         const devModeContainer = sideMenuSettingContainer.cloneNode(true);
@@ -870,6 +910,24 @@
 
 #ytdl-download-button > svg {
     transform: translateX(3.35%);
+}
+
+#ytdl-dl-quality-select {
+    background-color: var(--yt-spec-base-background);
+    color: var(--yt-spec-text-primary);
+    padding: 0.7rem 1rem;
+    border: none;
+    outline: none;
+    border-bottom: 2px solid var(--yt-spec-red-70);
+    border-left: 2px solid var(--yt-spec-red-70);
+    transition: all 0.2s ease-in-out;
+    font-family: "Roboto", "Arial", sans-serif;
+    font-size: 1.4rem;
+}
+
+#ytdl-dl-quality-select:focus {
+    border-bottom-color: var(--yt-brand-youtube-red);
+    border-left-color: var(--yt-brand-youtube-red);
 }
 
 @keyframes openMenu {
