@@ -13,5 +13,10 @@
         "title": "Download quality selection",
         "body": "You can now select the download resolution! Open the menu by pressing P on the keyboard\nEnjoy, and if you want, leave a star on the GitHub repository :)",
         "uuid": "338dc0fd-15b2-54a8-b497-38af375c12bb"
+    },
+    {
+        "title": "The script is not working, what do I do?",
+        "body": "The API service used by this script (Cobalt) stopped providing free instances because of DDOS attacks. The script will NOT work until further notice.\nMore info @ https://github.com/imputnet/cobalt/discussions/860",
+        "uuid": "18ae24ab-2472-5b9f-977e-26a3f6005f6b"
     }
 ]
